@@ -1,0 +1,9 @@
+{
+  "visit": {
+   "page": "http://www.google.com",
+   "contains": {
+      "I'm Feeling Lucky": "true",
+      "Foo, bar and baz": "false"
+   }
+  }
+}
