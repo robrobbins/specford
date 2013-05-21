@@ -1,6 +1,6 @@
-var $ = require('sudoclass'),
-  rw = require('./rewriter'),
-  fs = require('fs'),
+var fs = require('fs'),
+  $ = require('sudoclass'),
+  Lexer = require('./lexer');
 
   // the parser reads a config JSON file and transforms it inta a set of instructions
   Parser = function(path) {
@@ -8,11 +8,10 @@ var $ = require('sudoclass'),
     Object.extend(this, $.extensions.observable);
 
     this.addDelegate(new $.delegates.Change({
-      filters: {
-        'fileContents': 'fileRead',
-        'parsedContents': 'fileParsed'
-      }
+      filters: {'fileContents': 'fileRead'}
     }));
+
+    this.lexer = new Lexer();
 
     this.observe(this.delegate('change', 'filter'));
 
@@ -37,19 +36,9 @@ Parser.prototype = Object.extend(Object.create($.Model.prototype), {
     }.bind(this));
   },
   fileRead: function(change) {
-    // in a try catch as json may be malformed
-    try {
-      this.set('parsedContents', JSON.parse(change.value));
-    } catch(err) {
-      this.error('PARSEERROR');
-    } 
-  },
-  fileParsed: function(change) {
-    // pull out the initial visit
-    var init = change.visit;
-    // specford will observe this and put the instruction set
-    // together via the rewriter
-    this.set('initialVisit', change.value.visit);
+    // we need no get the text into a state that the rewriter can use
+    // first the lexer tokenizes the spec file
+    this.set('tokens', this.lexer.tokenize(change.value));
   }
 });
 

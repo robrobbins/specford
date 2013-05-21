@@ -2,15 +2,15 @@ var P = require('../src/parser');
 
 describe('Parser', function() {
   beforeEach(function() {
-    p = new P('examples/one.json');  
+    p = new P('examples/goog.spec');  
   });
 
   it('has been instantiated with a path', function() {
-    expect(p.get('path')).toBe('examples/one.json');
+    expect(p.get('path')).toBe('examples/goog.spec');
   });
 
   it('records an error for an erroneous path', function() {
-    p.set('path', 'examples/bogus.json');
+    p.set('path', 'examples/bogus.spec');
     p.read();
 
     waitsFor(function() {
@@ -18,7 +18,7 @@ describe('Parser', function() {
     }, 'Parser did not execute the read', 3000);
       
     runs(function() {
-      expect(p.get('error')).toBe('Cannot locate file at examples/bogus.json');
+      expect(p.get('error')).toBe('Cannot locate file at examples/bogus.spec');
     });
   });
 
@@ -34,27 +34,17 @@ describe('Parser', function() {
     });
   });
 
-  it('parses a file given a correctly formatted string', function() {
+  it('Scans, via Lexer, a correctly formatted file', function() {
     p.read();
 
     waitsFor(function() {
-      return !!p.data.parsedContents;
-    }, 'Parser did not read the file', 3000);
+      return !!p.data.tokens;
+    }, 'Parser did not lex the file', 3000);
 
     runs(function() {
-      expect(p.get('parsedContents')).toBeTruthy();
+      expect(p.get('tokens')).toBeTruthy();
+      console.log(this.data.tokens);
     });
   });
 
-  it('sets the initial visit', function() {
-    p.read();
-
-    waitsFor(function() {
-      return !!p.data.initialVisit;
-    }, 'Parser did not extract the initial visit', 3000);
-
-    runs(function() {
-      expect(p.get('initialVisit')).toBeTruthy();
-    });
-  });
 });
