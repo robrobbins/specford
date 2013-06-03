@@ -2,15 +2,15 @@ var P = require('../src/parser');
 
 describe('Parser', function() {
   beforeEach(function() {
-    p = new P('examples/goog.spec');  
+    p = new P('specs/goog.spec');  
   });
 
   it('has been instantiated with a path', function() {
-    expect(p.get('path')).toBe('examples/goog.spec');
+    expect(p.get('path')).toBe('specs/goog.spec');
   });
 
   it('records an error for an erroneous path', function() {
-    p.set('path', 'examples/bogus.spec');
+    p.set('path', 'specs/bogus.spec');
     p.read();
 
     waitsFor(function() {
@@ -18,7 +18,7 @@ describe('Parser', function() {
     }, 'Parser did not execute the read', 3000);
       
     runs(function() {
-      expect(p.get('error')).toBe('Cannot locate file at examples/bogus.spec');
+      expect(p.get('error')).toBe('Cannot locate file at specs/bogus.spec');
     });
   });
 
@@ -43,8 +43,6 @@ describe('Parser', function() {
 
     runs(function() {
       expect(p.get('tokens')).toBeTruthy();
-      console.log(this.data.tokens);
     });
   });
-
 });

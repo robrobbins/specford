@@ -1,19 +1,32 @@
 var fs = require('fs'),
   $ = require('sudoclass'),
-  Lexer = require('./lexer');
+  Lexer = require('./lexer'),
+  Rewriter = require('./rewriter'),
+  Filewriter = require('./filewriter');
 
   // the parser reads a config JSON file and transforms it inta a set of instructions
   Parser = function(path) {
     this.construct({path: path});
     Object.extend(this, $.extensions.observable);
 
-    this.addDelegate(new $.delegates.Change({
-      filters: {'fileContents': 'fileRead'}
-    }));
+    // the Lexer Delegate will Observe the Parser's
+    // 'fileContents' key and tokenize it when available
+    this.addDelegate(new Lexer());
 
-    this.lexer = new Lexer();
+    // the Rewriter takes the tokens set by the parser ond
+    // uses its iterator delegate to get an instruction set
+    // which it then uses to prepare the content for the tmp file(s)
+    // setting the code(s) here
+    this.addDelegate(new Rewriter());
 
-    this.observe(this.delegate('change', 'filter'));
+    // the filewriter observes the 'code' key, then
+    // writes the spec file `specs/foo.spec` => `scripts/foo.js`
+    this.addDelegate(new Filewriter(path));
+
+    // TODO roll this into the sudo base class then remove these
+    this.delegate('lexer').addedAsDelegate(this);
+    this.delegate('rewriter').addedAsDelegate(this);
+    this.delegate('filewriter').addedAsDelegate(this);
 
     this.FINDERROR = 'Cannot locate file at ${0}';
     this.READERROR = 'Cannot read file at ${0}';
@@ -30,16 +43,11 @@ Parser.prototype = Object.extend(Object.create($.Model.prototype), {
     this.set('error', this[which].expand([this.get('path')]));
   },
   readFile: function() {
-    fs.readFile(this.get('path'), {encoding: 'utf8'}, function(err, data) {
+    fs.readFile(this.get('path'), 'utf8', function(err, data) {
       if(err) return this.error('READERROR');
       this.set('fileContents', data);
     }.bind(this));
-  },
-  fileRead: function(change) {
-    // we need no get the text into a state that the rewriter can use
-    // first the lexer tokenizes the spec file
-    this.set('tokens', this.lexer.tokenize(change.value));
-  }
+  } 
 });
 
 module.exports = Parser;
