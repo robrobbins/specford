@@ -125,6 +125,8 @@ Lexer.prototype = Object.extend({}, {
         
       i += taken;
     }
+    // reset the currentIndent
+    this.currentIndent = 0;
     return this.tokens;
   },
 

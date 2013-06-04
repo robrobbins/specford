@@ -6,7 +6,7 @@ describe('Rewriter', function() {
     p = new P('specs/xkcd.spec');
   });
 
-  it('creates an instruction set, given tokens from the Parser', function() {
+  it('rewrites the instruction set', function() {
     p.read();
 
     waitsFor(function() {

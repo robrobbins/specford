@@ -4,7 +4,7 @@ var walk = require('walk'),
   $ = require('sudoclass'),
   Parser = require('./src/parser.js'),
   exec = require('child_process').exec,
-  parsing = 'Parsing ${count} .spec files.',
+  parsing = 'Parsed ${count} .spec files.',
   casper = 'casperjs ${root}${name}',
   end = 'Fording ${count} specs:',
   walkOpts = {
@@ -13,7 +13,7 @@ var walk = require('walk'),
   // the inital 2 are always present
   args = process.argv.slice(2),
   execScripts, compileSpecs, parser, child, compile, cIndex, 
-  scriptWalker, specWalker, count, next;
+  scriptWalker, specWalker, count, next, rIndex;
 
 execScripts = function() {
   count = 0;
@@ -21,7 +21,7 @@ execScripts = function() {
   scriptWalker = walk.walk('scripts/', walkOpts);
 
   scriptWalker.on('file', function(root, stats, next) {
-
+    // FIXME why fiter no workee for dsstore?
     if(stats.name !== '.DS_Store') {
       count++;
     // we pipe the output of casper through the stdout
@@ -42,16 +42,22 @@ execScripts = function() {
   });
 };
 
-compileSpecs = function(parser) {
-  count = 0;
+compileSpec = function(path) {
+  parser = new parser('specs/' + path);
+  parser.read();
+  console.log(parsing.expand({count: 1}));
+};
+
+compileSpecs = function() {
+  parser = new Parser(); count = 0;
 
   specWalker = walk.walk('specs/', walkOpts);
 
   specWalker.on('file', function(root, stats, next) {
     count++;
-    parser = new Parser(root + stats.name);
-    parser.read();
-    next();
+    parser.set('path', root + stats.name);
+    // pass the next to the Parser to be called when ready
+    parser.read(next);
   });
 
   specWalker.on('errors', function(root, arry, next) {
@@ -60,6 +66,7 @@ compileSpecs = function(parser) {
   });
 
   specWalker.on('end', function() {
+    parser = null;
     console.log(parsing.expand({count: count}));
   });
 };
@@ -80,6 +87,7 @@ if(!args.length) {
     if(args.length > 1) {
       // everything after the --compile
       next = cIndex + 1;
+      // it may just be the --run flag
       // specific or all spec files need to be compiled first,
       // skip the 'flag'
       compile = args.splice(next, (args.length - next));

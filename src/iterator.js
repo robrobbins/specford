@@ -5,10 +5,7 @@ var $ = require('sudoclass'),
     // over them in steps that the rewriter can use
     // to produce the output that becomes a tmp file
     
-    Iterator = function() {
-      this.currentIndex = 0;
-      this.currentQuery = null;
-    };
+    Iterator = function() {};
 
 // inherit and extend the base model class, just in case...
 Iterator.prototype = Object.extend({}, {

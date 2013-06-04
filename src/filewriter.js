@@ -3,25 +3,35 @@ var fs = require('fs'),
   $ = require('sudoclass'),
 
   Filewriter = function(filename) {
-    this.filename = filename.replace('specs/', 'scripts/').replace('.spec', '.js');
+    if(filename) this.setFileName(filename);
     this.writeError = 'Error writing spec file';
   };
 
 Filewriter.prototype = Object.extend({}, {
   addedAsDelegate: function(delegator) {
-    delegator.observe(this.writeSpec.bind(this));
+    delegator.observe(this.handleChange.bind(this));
+  },
+
+  handleChange: function(change) {
+    // if any more keys are observed, use a change delegate
+    if(change.name === 'path') this.setFileName(change.object.path);
+    else if(change.name === 'code') this.writeSpec(change.object.code);
   },
 
   role: 'filewriter',
+
+  setFileName: function(filename) {
+    this.filename = filename.replace('specs/', 'scripts/').replace('.spec', '.js');
+  },
 
   specWritten: function(err) {
     if(err) this.delegator.set('error', this.writeError);
     else this.delegator.set('specWritten', true);
   },
 
-  writeSpec: function(change) {
-    if(change.name !== 'code') return;
-    fs.writeFile(this.filename, change.object.code, 'utf8', 
+  writeSpec: function(code) {
+    console.log('writing ' + this.filename);
+    fs.writeFile(this.filename, code, 'utf8', 
       this.specWritten.bind(this));
   }
 });

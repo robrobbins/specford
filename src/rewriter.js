@@ -16,8 +16,7 @@ var $ = require('sudoclass'),
 
     this.visitError = 'Non-Visit block encountered where a Visit expected.';
     this.queryError = 'Non-Query block encountered where a Query expected.';
-    // all tmp files will begin with the opening require
-    this.code = grammer.require;
+    
 
     this.addDelegate(new Iterator());
   };
@@ -42,9 +41,10 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
   },
 
   // continuing the string started by the require, 
-  // build the content for the eventual tmp file
+  // build the content for the eventual script file
   rewrite: function(instructions) {
-    var assertions = '', visit, query, currentSelector,
+    var code = grammer.require,
+      assertions = '', visit, query, currentSelector,
       step, then, fn, run, runBody;
     // only visits live at the top level of the inst set
     while((visit = instructions.shift())) {
@@ -56,7 +56,7 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
         return;
       }
       // always starts here
-      this.code += grammer.start.expand({where: visit.shift()});
+      code += grammer.start.expand({where: visit.shift()});
       // now begin any number of top-level queries.
       // they may contain nested queries, that simply
       // stack or unstack selectors
@@ -86,7 +86,7 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
       terminator: ''
     });
     // wrap that fn in a then statement, adding it to the code
-    this.code += grammer.then.expand({fn: fn});
+    code += grammer.then.expand({fn: fn});
     // create the run statement
     runBody = grammer.done.expand({num: this.assertCount}) + 
       grammer.renderResults.expand({bool: true});
@@ -98,9 +98,8 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
       terminator: ''
     });
 
-    this.code += grammer.run.expand({fn: run});
-    this.delegator.set('code', this.code);
-    console.log('done.');
+    code += grammer.run.expand({fn: run});
+    this.delegator.set('code', code);
   },
 
   recurseQuery: function(step, selector) {
