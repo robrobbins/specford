@@ -32,6 +32,8 @@ module.exports = {
   URL: {
     '//=': 'assertUrlMatch'
   },
+  CLICK: 'click',
+  click: "  this.click('${selector}');\n",
   require: "var casper = require('casper').create();\n",
   start: "casper.start('${where}');\n",
   then: "casper.then(${fn});\n",
@@ -40,5 +42,6 @@ module.exports = {
   renderResults: "  this.test.renderResults(${bool});\n",
   assertSelectorExists: "  this.test.assertSelectorExists('${selector}');\n",
   assertSelectorHasText: "  this.test.assertSelectorHasText('${selector}', '${text}');\n",
-  assertSelectorDoesntHaveText: "  this.test.assertSelectorDoesntHaveText('${selector}', '${text}');\n"
+  assertSelectorDoesntHaveText: "  this.test.assertSelectorDoesntHaveText('${selector}', '${text}');\n",
+  assertUrlMatch: "  this.test.assertUrlMatch(${regex});\n"
 };

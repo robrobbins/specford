@@ -43,13 +43,13 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
   // continuing the string started by the require, 
   // build the content for the eventual script file
   rewrite: function(instructions) {
-    var code = grammer.require,
-      assertions = '', visit, query, currentSelector,
-      step, then, fn, run, runBody;
+    var code = standards.header + grammer.require,
+      fn, visit, query, currentSelector, step, run, runBody;
     // only visits live at the top level of the inst set
     while((visit = instructions.shift())) {
       // reset per visit
       this.assertCount = 0;
+      this.assertions = [''];
       // bad if not a visit
       if(visit.shift() !== 'VISIT') {
         delegator.set('error', this.visitError);
@@ -62,6 +62,7 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
       // stack or unstack selectors
       while((query = visit.shift())) {
         currentSelector = [];
+        assertions = [];
         // bad if not a query
         if(query.shift() !== 'QUERY') {
           delegator.set('error', this.queryError);
@@ -74,19 +75,14 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
         while(query.length) {
           step = query.shift();
           // start digging
-          assertions += this.assembleAssertions(step, query, currentSelector);
+          this.assembleAssertions(step, query, currentSelector);
         }
       }
     }
-    // wrap the assertions in an anonymous fn
-    fn = standards.fn.expand({
-      args: '',
-      body: assertions,
-      nfe: 'then',
-      terminator: ''
-    });
-    // wrap that fn in a then statement, adding it to the code
-    code += grammer.then.expand({fn: fn});
+    // each item in the assertions array represents a then block
+    this.assertions.forEach(function(block) {
+      code += this.thenBlock(block);
+    }.bind(this));
     // create the run statement
     runBody = grammer.done.expand({num: this.assertCount}) + 
       grammer.renderResults.expand({bool: true});
@@ -119,11 +115,12 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
     if(step[0] === 'QUERY') {
       return this.recurseQuery(step, selector);
     }
-    var assert, assertion, ref, curr, mySelector;
+    var assert, ref, curr, mySelector;
     // a non-query ready to be expanded into an assertion
     // most have 3 parts, but some have 2
     if(step[0] in grammer.noAssert) {
-      return " a non assert \n";
+      // should be the last item in a then block
+      // as the world may change
     } else {
       // grab the next 2 items out of query, we now have all 3 pieces
       assert = query.shift();
@@ -133,7 +130,7 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
       switch(curr) {
         case 'assertSelectorExists':
         case 'assertSelectorDoesntExist':
-          assert = grammer[curr].expand({
+          this.assertions[this.assertions.length - 1] += grammer[curr].expand({
             selector: (selector.join(' ') + ' ' + ref[1])
           });
           this.assertCount++;
@@ -141,7 +138,7 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
 
         case 'assertSelectorHasText':
         case 'assertSelectorDoesntHaveText':
-          assert = grammer[curr].expand({
+          this.assertions[this.assertions.length - 1] += grammer[curr].expand({
             selector: selector.join(' '),
             text: ref[1]
           });
@@ -149,14 +146,29 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
           break;
         
         default:
-          assert = '';
           break;
       }
     }
-    return assert;
+    // if theres more, keep going
+    if(query.length) return this.assembleAssertions(query.shift(), query, selector);
+    else return;
   },
 
-  role: 'rewriter'
+  role: 'rewriter',
+
+  // take any number of assertions and wrap them in 'then' block
+  thenBlock: function(assertions) {
+    var fn;
+    // wrap the assertions in an anonymous fn
+    fn = standards.fn.expand({
+      args: '',
+      body: assertions,
+      nfe: 'then',
+      terminator: ''
+    });
+    // wrap that fn in a then statement, adding it to the code
+    return grammer.then.expand({fn: fn});
+  }
 
 });
 

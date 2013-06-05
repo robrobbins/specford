@@ -11,14 +11,11 @@ var $ = require('sudoclass'),
 Iterator.prototype = Object.extend({}, {
   makeInstructionSet: function(tokens) {
     var instructions = [],
-      previousQueries = [],
       visitCount = 0,
-      // keep track so we can back out to a previous level
-      queryLevel = 0,
       // the current-most query token
-      query;
+      query, queryLevel, queryStack;
     // the tokens will be in a flat array of arrays, break them into 
-    // grouped [[VISIT, where,[], [VISIT, where, []]]
+    // grouped [[VISIT, where,[query,[what][...]]]]
     tokens.forEach(function(token) {
       if(token[0] === 'VISIT') {
         // eventually the instructionSet length will === visitCount
@@ -29,6 +26,7 @@ Iterator.prototype = Object.extend({}, {
         query = null;
         // there are none yet
         queryStack = [];
+        queryLevel = 0;
         // the visit tokens are the only ones pushed directly to the instructionSet
         instructions.push(token);
       } else if(token[0] === 'QUERY') {
@@ -55,15 +53,30 @@ Iterator.prototype = Object.extend({}, {
           } else if(query.indented === token.indented) {
             // a sibling query, nests in the queryStack[queryLevel - 1]
             queryStack[queryLevel - 1].push(token);
-            // it does become the current query
+            // becomes the current query
             query = token;
           } else {
-            // we need to use the queryLevel to return to a lower index
-            // in the visit tree
-            // TODO this
-            queryLevel--;
-            console.log('should not be here yet');
-
+            // this token may have traversed bacwards in the queryStack
+            // more than a single level. The base case is that it 'resets'
+            // the top level query of the current visit
+            for(queryLevel; queryLevel >= 0; queryLevel--) {
+              // if we hit 0, reset the 'top level' query
+              if(queryLevel === 0) {
+                query = token;
+                // the queryStack will have been emptied by this point
+                instructions[visitCount - 1].push(query);
+              } else {
+                if(token.indented > queryStack[queryLevel - 1].indented) {
+                  // push this in to that one and bail
+                  queryStack[queryLevel - 1].push(token);
+                  query = token;
+                  break;
+                } else {
+                  // pop off the previous query in the stack and continue
+                  queryStack.pop();
+                }
+              }
+            }
           }
         }
       } else {

@@ -11,9 +11,15 @@ var walk = require('walk'),
     followLinks: false
   },
   // the inital 2 are always present
-  args = process.argv.slice(2),
-  execScripts, compileSpecs, parser, child, compile, cIndex, 
-  scriptWalker, specWalker, count, next, rIndex;
+  args = process.argv.slice(2), execCb,
+  execScripts, compileSpecs, parser, child, compFlag, 
+  cfi, scriptWalker, specWalker, count, runFlag, rfi;
+
+execCb = function(e, so, se) {console.log(so);};
+
+execScript = function(path) {
+  exec(casper.expand({root: 'scripts/', name: path}), execCb);
+};
 
 execScripts = function() {
   count = 0;
@@ -24,10 +30,8 @@ execScripts = function() {
     // FIXME why fiter no workee for dsstore?
     if(stats.name !== '.DS_Store') {
       count++;
-    // we pipe the output of casper through the stdout
-      child = exec(casper.expand({root: root, name: stats.name}), function(e, so, se) {
-        console.log(so);
-      });
+      // we pipe the output of casper through the stdout
+      exec(casper.expand({root: root, name: stats.name}), execCb);
     }
     next();
   });
@@ -43,9 +47,8 @@ execScripts = function() {
 };
 
 compileSpec = function(path) {
-  parser = new parser('specs/' + path);
+  parser = new Parser('specs/' + path);
   parser.read();
-  console.log(parsing.expand({count: 1}));
 };
 
 compileSpecs = function() {
@@ -80,21 +83,39 @@ if(!args.length) {
  execScripts();
 } else {
   // we have some specific argument(s)
-  // if any are --compile that needs to be handled first
-  cIndex = args.indexOf('--compile');
+  // if any are --compile/--run that needs to be handled first
+  cfi = args.indexOf('--compile');
+  // cant inline this as -1 != falsey
+  if(cfi !== -1) compFlag = args.splice(cfi, 1);
+  rfi = args.indexOf('--run');
+  if(rfi !== -1) runFlag = args.splice(rfi, 1);
 
-  if(cIndex !== -1) {
-    if(args.length > 1) {
-      // everything after the --compile
-      next = cIndex + 1;
-      // it may just be the --run flag
-      // specific or all spec files need to be compiled first,
-      // skip the 'flag'
-      compile = args.splice(next, (args.length - next));
+  if(compFlag) {
+    // only compile specific files if there are any
+    if(args.length) {
+      args.forEach(function(path) {
+        compileSpec(path);
+      });
     } else {
       compileSpecs();
     }
+    // --run only should be passed if --compile was
+    if(runFlag) {
+      if(args.length) {
+        args.forEach(function(path) {
+          path.replace('.spec', '.js');
+          execScript(path);
+        });
+      } else {
+        // running them all
+        execScripts();
+      }
+    }
   } else {
-    // not compiling anything just running a specific spec or dir of them
+    // there were args, but none compiled, run them
+    // should be scripts/
+    args.forEach(function(path) {
+      execScript(path);
+    });
   }
 }

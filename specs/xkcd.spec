@@ -8,3 +8,6 @@ visit http://xkcd.com/149:
     $ #news:
       text ? "You can get"
 
+  $ #middleContainer:
+    selector ? "#ctitle"
+
