@@ -6,10 +6,15 @@ casper.then(function then() {
   this.test.assertSelectorHasText('#topContainer #masthead', 'A webcomic of');
   this.test.assertSelectorHasText('#topContainer #news', 'You can get');
   this.test.assertSelectorExists('#middleContainer #ctitle');
+  this.click('#middleContainer .comicNav a[rel="next"]');
+
+});
+casper.then(function then() {
+  this.test.assertUrlMatch(/xkcd.com\/150/);
 
 });
 casper.run(function run() {
-  this.test.done(4);
+  this.test.done(5);
   this.test.renderResults(true);
 
 });

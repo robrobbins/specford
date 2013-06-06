@@ -10,10 +10,10 @@ var Lexer = function() {
     // a catch all generic thing
     identifier: /^([$A-Za-z_]\w*)/,
     // anything wrapped in double quotes
-    reference: /^"([^'].*?)"/,
+    reference: /^'([^"].*?)'/,
     number: /^([0-9]+)/,
     // == is truthy != is falsy etc
-    assert: /^([!]*\?)|([<>\!=][=|==])/,
+    assert: /^([!]*\?|[<>\!\^=]=)/,
     vistBlock: /^visit\s+(.*):/,
     queryBlock: /^\$\s*(.*):/
   };

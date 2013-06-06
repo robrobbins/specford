@@ -5,7 +5,7 @@ module.exports = {
   '!=': 'assertFalsey',
   '===': 'assertEquals',
   '!==': 'assertNotEquals',
-  '//=': 'assertMatch',
+  '^=': 'assertMatch',
   VISIT: 'start',
   VISIBLE: {
     '===': 'assertVisible',
@@ -30,7 +30,7 @@ module.exports = {
     CLICK: true
   },
   URL: {
-    '//=': 'assertUrlMatch'
+    '^=': 'assertUrlMatch'
   },
   CLICK: 'click',
   click: "  this.click('${selector}');\n",

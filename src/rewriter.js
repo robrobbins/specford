@@ -81,6 +81,7 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
     }
     // each item in the assertions array represents a then block
     this.assertions.forEach(function(block) {
+      // TODO handle the few other types of blocks
       code += this.thenBlock(block);
     }.bind(this));
     // create the run statement
@@ -115,12 +116,29 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
     if(step[0] === 'QUERY') {
       return this.recurseQuery(step, selector);
     }
-    var assert, ref, curr, mySelector;
+    var assert, ref, curr;
     // a non-query ready to be expanded into an assertion
     // most have 3 parts, but some have 2
+
+    // TODO code these switch statements out
+
     if(step[0] in grammer.noAssert) {
       // should be the last item in a then block
       // as the world may change
+      ref = query.shift();
+      curr = grammer[step[0]];
+      switch(curr) {
+        case 'click':
+          this.addsertion(grammer[curr].expand({
+            selector: (selector.join(' ') + ' ' + ref[1])
+          }));
+          // this will cause a new then block
+          this.assertions.push('');
+          break;
+        
+        default:
+          break;
+      }
     } else {
       // grab the next 2 items out of query, we now have all 3 pieces
       assert = query.shift();
@@ -130,18 +148,25 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
       switch(curr) {
         case 'assertSelectorExists':
         case 'assertSelectorDoesntExist':
-          this.assertions[this.assertions.length - 1] += grammer[curr].expand({
+          this.addsertion(grammer[curr].expand({
             selector: (selector.join(' ') + ' ' + ref[1])
-          });
+          }));
           this.assertCount++;
           break;
 
         case 'assertSelectorHasText':
         case 'assertSelectorDoesntHaveText':
-          this.assertions[this.assertions.length - 1] += grammer[curr].expand({
+          this.addsertion(grammer[curr].expand({
             selector: selector.join(' '),
             text: ref[1]
-          });
+          }));
+          this.assertCount++;
+          break;
+
+        case 'assertUrlMatch':
+          this.addsertion(grammer[curr].expand({
+            regex: ref[1]
+          }));
           this.assertCount++;
           break;
         
@@ -168,6 +193,11 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
     });
     // wrap that fn in a then statement, adding it to the code
     return grammer.then.expand({fn: fn});
+  },
+
+  // yeah thats right. Addsertion.
+  addsertion: function(assertion) {
+    this.assertions[this.assertions.length - 1] += assertion;
   }
 
 });

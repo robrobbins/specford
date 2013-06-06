@@ -1,13 +1,16 @@
 visit http://xkcd.com/149:
   $ #topContainer:
-    selector ? "#masthead"
+    selector ? '#masthead'
 
     $ #masthead:
-      text ? "A webcomic of"
+      text ? 'A webcomic of'
 
     $ #news:
-      text ? "You can get"
+      text ? 'You can get'
 
   $ #middleContainer:
-    selector ? "#ctitle"
+    selector ? '#ctitle'
 
+    $ .comicNav:
+      click 'a[rel="next"]'
+      url ^= '/xkcd.com\/150/'
