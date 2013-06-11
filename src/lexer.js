@@ -2,9 +2,9 @@ var $ = require('sudoclass');
 
 var Lexer = function() {
   // spec keywords that will be rewritten into code fragments
-  this.keywords = ['text', 'class', 'id', 'css', 'count', 'click', 'fill', 'selector',
-    'element', 'name', 'tagName', 'visible', 'url'];
+  this.keywords = ['text', 'click', 'link', 'selector', 'url'];
   this.regexes = {
+    comment: /^--\s*.*/,
     whitespace: /^[^\n\S]+/,
     trailingSpaces: /\s+$/,
     // a catch all generic thing
@@ -35,6 +35,14 @@ Lexer.prototype = Object.extend({}, {
     var match;
     if((match = this.regexes.vistBlock.exec(this.chunk))) {
       this.pushToken('VISIT', match[1]);
+      return match[0].length;
+    } else return 0;
+  },
+
+  commentToken: function() {
+    var match;
+    if((match = this.regexes.comment.exec(this.chunk))) {
+      // dont include comments in the output
       return match[0].length;
     } else return 0;
   },
@@ -116,6 +124,7 @@ Lexer.prototype = Object.extend({}, {
     // crawl the code
     while((this.chunk = code.slice(i))) {
       taken = this.visitToken() ||
+        this.commentToken() ||
         this.queryToken() ||
         this.assertToken() ||
         this.referenceToken() ||

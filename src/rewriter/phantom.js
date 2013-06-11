@@ -5,18 +5,21 @@
 var $ = require('sudoclass'),
   // the grammer is a module
   // TODO make this an arg when new grammers are avail
-  grammer = require('./grammer/casper'),
+  grammer = require('../grammer/phantom'),
   // grammer files dont need to explain language standards
-  standards = require('./grammer/standards'),
+  standards = require('../grammer/standards'),
   // delegate to the iterator to get ordered steps
-  Iterator = require('./iterator'),
+  Iterator = require('../iterator'),
 
   Rewriter = function() {
     this.construct();
 
     this.visitError = 'Non-Visit block encountered where a Visit expected.';
     this.queryError = 'Non-Query block encountered where a Query expected.';
-    
+
+    this.seperated = {
+      urlChanged: []
+    };
 
     this.addDelegate(new Iterator());
   };
@@ -43,20 +46,22 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
   // continuing the string started by the require, 
   // build the content for the eventual script file
   rewrite: function(instructions) {
-    var code = standards.header + grammer.require,
-      fn, visit, query, currentSelector, step, run, runBody;
+    var code = standards.header + grammer.page,
+      urlchanges = '', curr = '',
+      visit, query, currentSelector, step, report, where, seperator;
     // only visits live at the top level of the inst set
     while((visit = instructions.shift())) {
       // reset per visit
       this.assertCount = 0;
+      // 0: opening assertions 1:onUrlChanged
       this.assertions = [''];
       // bad if not a visit
       if(visit.shift() !== 'VISIT') {
         delegator.set('error', this.visitError);
         return;
       }
-      // always starts here
-      code += grammer.start.expand({where: visit.shift()});
+      // the page to be opened
+      where = visit.shift();
       // now begin any number of top-level queries.
       // they may contain nested queries, that simply
       // stack or unstack selectors
@@ -79,23 +84,37 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
         }
       }
     }
-    // each item in the assertions array represents a then block
-    this.assertions.forEach(function(block) {
-      // TODO handle the few other types of blocks
-      code += this.thenBlock(block);
+    // the assertions array tells us what to wrap where.
+    this.assertions.forEach(function(lines) {
+      // any 'lines' === 'seperator' ?
+      if(lines in this.seperated) {
+        seperator = lines;
+        this.seperated[seperator].push('');
+      } else {
+        if(seperator) {
+          // seperators nest depending on precedence eventually
+          this.addsertion(lines, this.seperated[seperator]);
+        } else {
+          curr += lines;
+        }
+      }
     }.bind(this));
-    // create the run statement
-    runBody = grammer.done.expand({num: this.assertCount}) + 
-      grammer.renderResults.expand({bool: true});
-
-    run = standards.fn.expand({
-      args: '',
-      body: runBody,
-      nfe: 'run',
-      terminator: ''
+    // before we wrap it add the report and exit. urlChanged has precedence
+    report = grammer.report.expand({
+      num: this.assertCount
     });
-
-    code += grammer.run.expand({fn: run});
+    if(this.seperated.urlChanged.length) {
+      this.addsertion(grammer.stop + report + grammer.exit, this.seperated.urlChanged);
+      // time to wrap the urlChanged, any more than 1 will nest (reusing the step var here)
+      for(step; this.seperated.urlChanged.length && (step = this.seperated.urlChanged.pop());) {
+        curr += grammer.onUrlChanged.expand({
+          body: step
+        });
+      }
+    } else curr += grammer.stop + report + grammer.exit;
+    //prepend the test start to the body of the opening
+    curr = grammer.start + curr;
+    code += grammer.open.expand({where: where, body: curr});
     this.delegator.set('code', code);
   },
 
@@ -116,63 +135,56 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
     if(step[0] === 'QUERY') {
       return this.recurseQuery(step, selector);
     }
-    var assert, ref, curr;
     // a non-query ready to be expanded into an assertion
-    // most have 3 parts, but some have 2
+    // must have 3 parts
 
-    // TODO code these switch statements out
+    // grab the next 2 items out of query, we now have all 3 pieces
+    var assert = query.shift(),
+    ref = query.shift(),
+    curr = grammer[step[0]][assert[1]];
+    // use the grammer to get the proper expansion
+    switch(curr) {
+      case 'selectorExists':
+      case 'selectorDoesntExist':
+        this.addsertion(grammer[curr].expand({
+          selector: (selector.join(' ') + ' ' + ref[1])
+        }));
+        this.assertCount++;
+        break;
 
-    if(step[0] in grammer.noAssert) {
-      // should be the last item in a then block
-      // as the world may change
-      ref = query.shift();
-      curr = grammer[step[0]];
-      switch(curr) {
-        case 'click':
-          this.addsertion(grammer[curr].expand({
-            selector: (selector.join(' ') + ' ' + ref[1])
-          }));
-          // this will cause a new then block
-          this.assertions.push('');
-          break;
-        
-        default:
-          break;
-      }
-    } else {
-      // grab the next 2 items out of query, we now have all 3 pieces
-      assert = query.shift();
-      ref = query.shift();
-      curr = grammer[step[0]][assert[1]];
-      // use the grammer to get the proper expansion
-      switch(curr) {
-        case 'assertSelectorExists':
-        case 'assertSelectorDoesntExist':
-          this.addsertion(grammer[curr].expand({
-            selector: (selector.join(' ') + ' ' + ref[1])
-          }));
-          this.assertCount++;
-          break;
+      case 'selectorHasText':
+      case 'selectorDoesntHaveText':
+        this.addsertion(grammer[curr].expand({
+          selector: selector.join(' '),
+          text: ref[1]
+        }));
+        this.assertCount++;
+        break;
 
-        case 'assertSelectorHasText':
-        case 'assertSelectorDoesntHaveText':
-          this.addsertion(grammer[curr].expand({
-            selector: selector.join(' '),
-            text: ref[1]
-          }));
-          this.assertCount++;
-          break;
+      case 'urlMatches':
+        this.addsertion(grammer[curr].expand({
+          regex: ref[1]
+        }));
+        this.assertCount++;
+        break;
+      
+      case 'clickLink':
+        this.addsertion(grammer[curr].expand({
+          selector: (selector.join(' ') + ' ' + ref[1])
+        }));
+        // this will cause an onUrlChanged block to be made *after* this
+        // click is performed
+        this.assertions.push('urlChanged', '');
+        break;
 
-        case 'assertUrlMatch':
-          this.addsertion(grammer[curr].expand({
-            regex: ref[1]
-          }));
-          this.assertCount++;
-          break;
-        
-        default:
-          break;
-      }
+      case 'clickSelector':
+        this.addsertion(grammer[curr].expand({
+          selector: (selector.join(' ') + ' ' + ref[1])
+        }));
+        break;
+
+      default:
+        break;
     }
     // if theres more, keep going
     if(query.length) return this.assembleAssertions(query.shift(), query, selector);
@@ -181,25 +193,11 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
 
   role: 'rewriter',
 
-  // take any number of assertions and wrap them in 'then' block
-  thenBlock: function(assertions) {
-    var fn;
-    // wrap the assertions in an anonymous fn
-    fn = standards.fn.expand({
-      args: '',
-      body: assertions,
-      nfe: 'then',
-      terminator: ''
-    });
-    // wrap that fn in a then statement, adding it to the code
-    return grammer.then.expand({fn: fn});
-  },
-
   // yeah thats right. Addsertion.
-  addsertion: function(assertion) {
-    this.assertions[this.assertions.length - 1] += assertion;
+  addsertion: function(assertion, collection) {
+    collection || (collection = this.assertions);
+    collection[collection.length - 1] += assertion;
   }
-
 });
 
 module.exports = Rewriter;

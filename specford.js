@@ -5,7 +5,7 @@ var walk = require('walk'),
   Parser = require('./src/parser.js'),
   exec = require('child_process').exec,
   parsing = 'Parsed ${count} .spec files.',
-  casper = 'casperjs ${root}${name}',
+  phantom = 'phantomjs ${root}${name}',
   end = 'Fording ${count} specs:',
   walkOpts = {
     followLinks: false
@@ -18,7 +18,7 @@ var walk = require('walk'),
 execCb = function(e, so, se) {console.log(so);};
 
 execScript = function(path) {
-  exec(casper.expand({root: 'scripts/', name: path}), execCb);
+  exec(phantom.expand({root: 'scripts/', name: path}), execCb);
 };
 
 execScripts = function() {
@@ -30,8 +30,8 @@ execScripts = function() {
     // FIXME why fiter no workee for dsstore?
     if(stats.name !== '.DS_Store') {
       count++;
-      // we pipe the output of casper through the stdout
-      exec(casper.expand({root: root, name: stats.name}), execCb);
+      // we pipe the output of phantom through the stdout
+      exec(phantom.expand({root: root, name: stats.name}), execCb);
     }
     next();
   });
@@ -56,11 +56,17 @@ compileSpecs = function() {
 
   specWalker = walk.walk('specs/', walkOpts);
 
+  //specWalker.on('names', function(root, arry) {
+    //arry.forEach(function(name) {console.log(name);});
+  //});
+
   specWalker.on('file', function(root, stats, next) {
-    count++;
-    parser.set('path', root + stats.name);
-    // pass the next to the Parser to be called when ready
-    parser.read(next);
+    if(stats.name !== '.DS_Store') {
+      count++;
+      parser.set('path', root + stats.name);
+      // pass the next to the Parser to be called when ready
+      parser.read(next);
+    }
   });
 
   specWalker.on('errors', function(root, arry, next) {
@@ -69,14 +75,13 @@ compileSpecs = function() {
   });
 
   specWalker.on('end', function() {
-    parser = null;
     console.log(parsing.expand({count: count}));
   });
 };
 
 // ------------------------------------- main --------------------------------
 // if there arent any passed in args, just loop over all 
-// .js compiled spec files with casper and output the result.
+// .js compiled spec files with phantom and output the result.
 // we use the npm 'walk' module in the case that specs are 
 // nested
 if(!args.length) {
@@ -103,8 +108,7 @@ if(!args.length) {
     if(runFlag) {
       if(args.length) {
         args.forEach(function(path) {
-          path.replace('.spec', '.js');
-          execScript(path);
+          execScript(path.replace('.spec', '.js'));
         });
       } else {
         // running them all
