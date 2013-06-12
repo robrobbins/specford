@@ -17,4 +17,4 @@ visit http://xkcd.com/149:
     $ .comicNav:
       click link 'a[rel="next"]'
 
-      url ^= '/xkcd.com\/150/'
+      url =~ '/xkcd.com\/150/'

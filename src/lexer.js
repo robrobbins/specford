@@ -13,7 +13,7 @@ var Lexer = function() {
     reference: /^'([^"].*?)'/,
     number: /^([0-9]+)/,
     // == is truthy != is falsy etc
-    assert: /^([!]*\?|[<>\!\^=]=)/,
+    assert: /^([!]*\?|[<>\!=~]=)/,
     vistBlock: /^visit\s+(.*):/,
     queryBlock: /^\$\s*(.*):/
   };
