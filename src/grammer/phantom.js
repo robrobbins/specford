@@ -5,7 +5,7 @@ module.exports = {
   '!=': 'isFalsey',
   '===': 'isEqual',
   '!==': 'isNotEqual',
-  '^=': 'Matches',
+  '=~': 'Matches',
   VISIT: 'open',
   VISIBLE: {
     '===': 'isVisible',
@@ -31,7 +31,7 @@ module.exports = {
   },
   noAssert: {},
   URL: {
-    '^=': 'urlMatches'
+    '=~': 'urlMatches'
   },
   clickSelector: "test.click('${selector}');\n",
   // exists so that the rewriter knows to place subsequent tests in an onUrlChanged block

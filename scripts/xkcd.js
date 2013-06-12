@@ -10,9 +10,8 @@ test.selectorHasText('#topContainer #news', 'You can get');
 test.selectorExists('#middleContainer #ctitle');
 test.click('#middleContainer .comicNav a[rel="next"]');
 page.onUrlChanged = function(targetUrl) {
-test.urlMatches(targetUrl, /xkcd.com\/150/);
 test.stop(new Date().getTime());
-test.report(5);
+test.report(4);
 phantom.exit();
 
 };
