@@ -41,6 +41,6 @@ module.exports = {
   start: "test.start(new Date().getTime());\n",
   stop: "test.stop(new Date().getTime());\ntest.report(${num});\nphantom.exit();\n",
   // the outer part of the test template, everything but the 'steps'
-  page: "var page, test = require('../src/utils/test'),\nsteps = [${steps}],\nnext = function(url) {\nif(page) page.close();\npage = require('webpage').create();\npage.open(url, steps.shift());\n};\nnext('${visit}');",
+  page: "var page, rPage = require('webpage'), test = require('../src/utils/test'),\nsteps = [${steps}],\nnext = function(url) {\nif(page) page.close();\npage = rPage.create();\npage.open(url, steps.shift());\n};\nnext('${visit}');",
   step: "function(status) {\nif(status !== 'success') console.log('Network error');\nelse {\n${body}}\n}"
 };
