@@ -1,12 +1,9 @@
-// TODO Jison? This is sort of a BNF already
-
 module.exports = {
   '==': 'isTruthy',
   '!=': 'isFalsey',
   '===': 'isEqual',
   '!==': 'isNotEqual',
   '^=': 'Matches',
-  VISIT: 'open',
   VISIBLE: {
     '===': 'isVisible',
     '==': 'isVisible',
@@ -29,22 +26,21 @@ module.exports = {
     '?': 'exists',
     '!?': 'doesntExist'
   },
-  noAssert: {},
   URL: {
     '^=': 'urlMatches'
   },
   clickSelector: "test.click('${selector}');\n",
   // exists so that the rewriter knows to place subsequent tests in an onUrlChanged block
   clickLink: "test.click('${selector}');\n",
-  page: "var page = require('webpage').create(), test = require('../src/utils/test');\n",
-  open: "page.open('${where}', function(status) {\nif(status !== 'success') console.log('Network Error');\nelse {\n${body}\n}\n});\n",
-  exit: "phantom.exit();\n",
+  page: "var page = require('webpage').create(), ",
   selectorExists: "test.selectorExists('${selector}');\n",
   selectorHasText: "test.selectorHasText('${selector}', '${text}');\n",
   selectorDoesntHaveText: "test.selectorDoesntHaveText('${selector}', '${text}');\n",
-  urlMatches: "test.urlMatches(targetUrl, ${regex});\n",
-  onUrlChanged: "page.onUrlChanged = function(targetUrl) {\n${body}\n};",
-  report: "test.report(${num});\n",
+  urlMatches: "test.urlMatches(${regex});\n",
+  onUrlChanged: "page.onUrlChanged = function(targetUrl) {next(targetUrl);};\n",
   start: "test.start(new Date().getTime());\n",
-  stop: "test.stop(new Date().getTime());\n"
+  stop: "test.stop(new Date().getTime());\ntest.report(${num});\nphantom.exit();\n",
+  // the outer part of the test template, everything but the 'steps'
+  page: "var page, test = require('../src/utils/test'),\nsteps = [${steps}],\nnext = function(url) {\nif(page) page.close();\npage = require('webpage').create();\npage.open(url, steps.shift());\n};\nnext('${visit}');",
+  step: "function(status) {\nif(status !== 'success') console.log('Network error');\nelse {\n${body}}\n}"
 };

@@ -32,8 +32,6 @@ module.exports =  {
     }, selector);
   },
 
-  //passes: 0,
-  
   report: function(num) {
     var elapsed = Math.floor(this.time / 100) / 10,
       info = colorizer.colorize("\nFinished: " + num + ' assertions in ' + elapsed + 's', 'greenBar', 50),
@@ -85,7 +83,8 @@ module.exports =  {
     this.time = t - this.started;
   },
 
-  urlMatches: function(url, regex) {
+  urlMatches: function(regex) {
+    var url = page.evaluate(function(){return window.location.href;});
     return this.run(url.match(regex), regex, null, 'urlMatches');
   },
 

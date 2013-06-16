@@ -14,7 +14,12 @@ visit http://xkcd.com/149:
   $ #middleContainer:
     selector ? '#ctitle'
 
+    text ? 'Sandwich'
+
     $ .comicNav:
       click link 'a[rel="next"]'
 
       url ^= '/xkcd.com\/150/'
+
+  $ #middleContainer:
+    text ? 'Grownups'

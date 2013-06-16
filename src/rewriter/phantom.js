@@ -17,10 +17,6 @@ var $ = require('sudoclass'),
     this.visitError = 'Non-Visit block encountered where a Visit expected.';
     this.queryError = 'Non-Query block encountered where a Query expected.';
 
-    this.seperated = {
-      urlChanged: []
-    };
-
     this.addDelegate(new Iterator());
   };
 
@@ -46,15 +42,14 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
   // continuing the string started by the require, 
   // build the content for the eventual script file
   rewrite: function(instructions) {
-    var code = standards.header + grammer.page,
-      urlchanges = '', curr = '',
-      visit, query, currentSelector, step, report, where, seperator;
+    var code = standards.header, steps = [],
+      curr, visit, query, currentSelector, step, where;
     // only visits live at the top level of the inst set
     while((visit = instructions.shift())) {
       // reset per visit
       this.assertCount = 0;
-      // 0: opening assertions 1:onUrlChanged
-      this.assertions = [''];
+      // place the timer start in the first 'step'
+      this.assertions = [grammer.start];
       // bad if not a visit
       if(visit.shift() !== 'VISIT') {
         delegator.set('error', this.visitError);
@@ -84,37 +79,14 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
         }
       }
     }
-    // the assertions array tells us what to wrap where.
-    this.assertions.forEach(function(lines) {
-      // any 'lines' === 'seperator' ?
-      if(lines in this.seperated) {
-        seperator = lines;
-        this.seperated[seperator].push('');
-      } else {
-        if(seperator) {
-          // seperators nest depending on precedence eventually
-          this.addsertion(lines, this.seperated[seperator]);
-        } else {
-          curr += lines;
-        }
-      }
-    }.bind(this));
-    // before we wrap it add the report and exit. urlChanged has precedence
-    report = grammer.report.expand({
-      num: this.assertCount
-    });
-    if(this.seperated.urlChanged.length) {
-      this.addsertion(grammer.stop + report + grammer.exit, this.seperated.urlChanged);
-      // time to wrap the urlChanged, any more than 1 will nest (reusing the step var here)
-      for(step; this.seperated.urlChanged.length && (step = this.seperated.urlChanged.pop());) {
-        curr += grammer.onUrlChanged.expand({
-          body: step
-        });
-      }
-    } else curr += grammer.stop + report + grammer.exit;
-    //prepend the test start to the body of the opening
-    curr = grammer.start + curr;
-    code += grammer.open.expand({where: where, body: curr});
+    // each assertions index is the body for a 'step'.
+    // wrap them in the step tmpl and keep in an array
+    // the last will need the 'stop' lines appended
+    for(curr; this.assertions.length && (curr = this.assertions.shift());) {
+      if(!this.assertions.length) curr += grammer.stop.expand({num: this.assertCount});
+      steps.push(grammer.step.expand({body: curr}));
+    }
+    code += grammer.page.expand({steps: steps, visit: where});
     this.delegator.set('code', code);
   },
 
@@ -142,7 +114,7 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
     var assert = query.shift(),
     ref = query.shift(),
     curr = grammer[step[0]][assert[1]];
-    // use the grammer to get the proper expansion
+    // use the grammar to get the proper expansion
     switch(curr) {
       case 'selectorExists':
       case 'selectorDoesntExist':
@@ -172,9 +144,10 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
         this.addsertion(grammer[curr].expand({
           selector: (selector.join(' ') + ' ' + ref[1])
         }));
-        // this will cause an onUrlChanged block to be made *after* this
-        // click is performed
-        this.assertions.push('urlChanged', '');
+        // push in a 'urlChanged' as the last entry of this step
+        this.addsertion(grammer.onUrlChanged);
+        // causes a new step to be started
+        this.assertions.push('');
         break;
 
       case 'clickSelector':
