@@ -1,13 +1,13 @@
-// Given the target grammer (for a specific test/spec framework)
+// Given the target grammar (for a specific test/spec framework)
 // and an instruction set produce the strings needed to write the 
 // temp files used by specford to test a crawled page
 
 var $ = require('sudoclass'),
-  // the grammer is a module
-  // TODO make this an arg when new grammers are avail
-  grammer = require('../grammer/phantom'),
-  // grammer files dont need to explain language standards
-  standards = require('../grammer/standards'),
+  // the grammar is a module
+  // TODO make this an arg when new grammars are avail
+  grammar = require('../grammar/phantom'),
+  // grammar files dont need to explain language standards
+  standards = require('../grammar/standards'),
   // delegate to the iterator to get ordered steps
   Iterator = require('../iterator'),
 
@@ -49,7 +49,7 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
       // reset per visit
       this.assertCount = 0;
       // place the timer start in the first 'step'
-      this.assertions = [grammer.start];
+      this.assertions = [grammar.start];
       // bad if not a visit
       if(visit.shift() !== 'VISIT') {
         delegator.set('error', this.visitError);
@@ -83,10 +83,10 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
     // wrap them in the step tmpl and keep in an array
     // the last will need the 'stop' lines appended
     for(curr; this.assertions.length && (curr = this.assertions.shift());) {
-      if(!this.assertions.length) curr += grammer.stop.expand({num: this.assertCount});
-      steps.push(grammer.step.expand({body: curr}));
+      if(!this.assertions.length) curr += grammar.stop.expand({num: this.assertCount});
+      steps.push(grammar.step.expand({body: curr}));
     }
-    code += grammer.page.expand({steps: steps, visit: where});
+    code += grammar.page.expand({steps: steps, visit: where});
     this.delegator.set('code', code);
   },
 
@@ -113,12 +113,12 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
     // grab the next 2 items out of query, we now have all 3 pieces
     var assert = query.shift(),
     ref = query.shift(),
-    curr = grammer[step[0]][assert[1]];
+    curr = grammar[step[0]][assert[1]];
     // use the grammar to get the proper expansion
     switch(curr) {
       case 'selectorExists':
       case 'selectorDoesntExist':
-        this.addsertion(grammer[curr].expand({
+        this.addsertion(grammar[curr].expand({
           selector: (selector.join(' ') + ' ' + ref[1])
         }));
         this.assertCount++;
@@ -126,7 +126,7 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
 
       case 'selectorHasText':
       case 'selectorDoesntHaveText':
-        this.addsertion(grammer[curr].expand({
+        this.addsertion(grammar[curr].expand({
           selector: selector.join(' '),
           text: ref[1]
         }));
@@ -134,24 +134,24 @@ Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
         break;
 
       case 'urlMatches':
-        this.addsertion(grammer[curr].expand({
+        this.addsertion(grammar[curr].expand({
           regex: ref[1]
         }));
         this.assertCount++;
         break;
       
       case 'clickLink':
-        this.addsertion(grammer[curr].expand({
+        this.addsertion(grammar[curr].expand({
           selector: (selector.join(' ') + ' ' + ref[1])
         }));
         // push in a 'urlChanged' as the last entry of this step
-        this.addsertion(grammer.onUrlChanged);
+        this.addsertion(grammar.onUrlChanged);
         // causes a new step to be started
         this.assertions.push('');
         break;
 
       case 'clickSelector':
-        this.addsertion(grammer[curr].expand({
+        this.addsertion(grammar[curr].expand({
           selector: (selector.join(' ') + ' ' + ref[1])
         }));
         break;

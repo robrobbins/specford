@@ -27,11 +27,6 @@ var fs = require('fs'),
     // writes the spec file `specs/foo.spec` => `scripts/foo.js`
     this.addDelegate(new Filewriter(path));
 
-    // TODO roll this into the sudo base class then remove these
-    this.delegate('lexer').addedAsDelegate(this);
-    this.delegate('rewriter').addedAsDelegate(this);
-    this.delegate('filewriter').addedAsDelegate(this);
-
     this.FINDERROR = 'Cannot locate file at ${0}';
     this.READERROR = 'Cannot read file at ${0}';
     this.PARSEERROR = 'Cannot parse string ${0}';
