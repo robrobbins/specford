@@ -7,7 +7,7 @@ var fs = require('fs'),
   // the parser reads a config JSON file and transforms it inta a set of instructions
   Parser = function(path) {
     this.construct({path: path});
-    Object.extend(this, $.extensions.observable);
+    $.extend(this, $.extensions.observable);
 
     // the filewriter sets the 'specWritten' key when done
     // thats our que to call next on the walker
@@ -32,7 +32,7 @@ var fs = require('fs'),
     this.PARSEERROR = 'Cannot parse string ${0}';
   };
 
-Parser.prototype = Object.extend(Object.create($.Model.prototype), {
+Parser.prototype = $.extend(Object.create($.Model.prototype), {
   // storts the chain that leads to the writing of the script file(s)
   read: function(next) {
     if(next) this.next = next;

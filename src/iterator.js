@@ -8,7 +8,7 @@ var $ = require('sudoclass'),
     Iterator = function() {};
 
 // inherit and extend the base model class, just in case...
-Iterator.prototype = Object.extend({}, {
+Iterator.prototype = $.extend({}, {
   makeInstructionSet: function(tokens) {
     var instructions = [],
       visitCount = 0,

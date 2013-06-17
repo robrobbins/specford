@@ -21,7 +21,7 @@ var Lexer = function() {
   this.currentIndent = 0;
 };
 
-Lexer.prototype = Object.extend({}, {
+Lexer.prototype = $.extend({}, {
   addedAsDelegate: function(delegator) {
     // observe the fileContents key of the parser
     // and tokenize them when available

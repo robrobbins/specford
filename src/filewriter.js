@@ -7,7 +7,7 @@ var fs = require('fs'),
     this.writeError = 'Error writing spec file';
   };
 
-Filewriter.prototype = Object.extend({}, {
+Filewriter.prototype = $.extend({}, {
   addedAsDelegate: function(delegator) {
     delegator.observe(this.handleChange.bind(this));
   },

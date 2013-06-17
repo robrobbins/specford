@@ -26,7 +26,6 @@ compileSpecs = function() {
   //});
 
   specWalker.on('file', function(root, stats, next) {
-    console.log(root + stats.name);
     if(stats.name !== '.DS_Store') {
       count++;
       parser.set('path', root + stats.name);

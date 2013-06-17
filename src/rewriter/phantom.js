@@ -20,7 +20,7 @@ var $ = require('sudoclass'),
     this.addDelegate(new Iterator());
   };
 
-Rewriter.prototype = Object.extend(Object.create($.Base.prototype), {
+Rewriter.prototype = $.extend(Object.create($.Base.prototype), {
   addedAsDelegate: function(delegator) {
     // observe the parsers tokens key and have the iterator
     // prepare those as an instruction set
