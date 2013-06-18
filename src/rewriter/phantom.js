@@ -108,52 +108,74 @@ Rewriter.prototype = $.extend(Object.create($.Base.prototype), {
       return this.recurseQuery(step, selector);
     }
     // a non-query ready to be expanded into an assertion
-    // must have 3 parts
+    // must have 3 parts [step, two, three]
 
     // grab the next 2 items out of query, we now have all 3 pieces
-    var assert = query.shift(),
-    ref = query.shift(),
-    curr = grammar[step[0]][assert[1]];
+    // plus a 'non-terminal' grammar step
+    var two = query.shift(),
+    three = query.shift(), nt;
+    // `fill` has a slightly diff syntax
+    if(step[0] in grammar.twoRefs) {
+      // assert and ref are refs
+      nt = grammar[step[0]];
+    } else nt = grammar[step[0]][two[1]];
     // use the grammar to get the proper expansion
-    switch(curr) {
+    switch(nt) {
       case 'selectorExists':
       case 'selectorDoesntExist':
-        this.addsertion(grammar[curr].expand({
-          selector: (selector.join(' ') + ' ' + ref[1])
+        this.addsertion(grammar[nt].expand({
+          selector: (selector.join(' ') + ' ' + three[1])
         }));
         this.assertCount++;
         break;
 
       case 'selectorHasText':
       case 'selectorDoesntHaveText':
-        this.addsertion(grammar[curr].expand({
+        this.addsertion(grammar[nt].expand({
           selector: selector.join(' '),
-          text: ref[1]
+          text: three[1]
         }));
         this.assertCount++;
         break;
 
-      case 'urlMatches':
-        this.addsertion(grammar[curr].expand({
-          regex: ref[1]
-        }));
-        this.assertCount++;
-        break;
-      
       case 'clickLink':
-        this.addsertion(grammar[curr].expand({
-          selector: (selector.join(' ') + ' ' + ref[1])
+        this.addsertion(grammar[nt].expand({
+          selector: (selector.join(' ') + ' ' + three[1])
         }));
         // push in a 'urlChanged' as the last entry of this step
         this.addsertion(grammar.onUrlChanged);
-        // causes a new step to be started
+        // causes a new block to be started, on a new phantom page
         this.assertions.push('');
         break;
 
       case 'clickSelector':
-        this.addsertion(grammar[curr].expand({
-          selector: (selector.join(' ') + ' ' + ref[1])
+        this.addsertion(grammar[nt].expand({
+          selector: (selector.join(' ') + ' ' + three[1])
         }));
+        break;
+
+      case 'fillSelector':
+        this.addsertion(grammar[nt].expand({
+          selector: (selector.join(' ') + ' ' + two[1]),
+          value: three[1]
+        }));
+        break;
+
+      case 'submitSelector':
+        this.addsertion(grammar[nt].expand({
+          selector: (selector.join(' ') + ' ' + three[1])
+        }));
+        // url will change
+        this.addsertion(grammar.onUrlChanged);
+        // starts a new phantom page
+        this.assertions.push('');
+        break;
+
+      case 'urlMatches':
+        this.addsertion(grammar[nt].expand({
+          regex: three[1]
+        }));
+        this.assertCount++;
         break;
 
       default:

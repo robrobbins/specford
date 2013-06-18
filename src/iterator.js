@@ -51,8 +51,10 @@ Iterator.prototype = $.extend({}, {
             // any subsequent assertions are against this query
             query = token;
           } else if(query.indented === token.indented) {
-            // a sibling query, nests in the queryStack[queryLevel - 1]
-            queryStack[queryLevel - 1].push(token);
+            // a sibling query, either nests in the queryStack[queryLevel - 1]
+            // or replaces the topmost query
+            if(queryLevel === 0) instructions[visitCount - 1].push(token);
+            else queryStack[queryLevel - 1].push(token);
             // becomes the current query
             query = token;
           } else {

@@ -1,7 +1,6 @@
 visit http://xkcd.com/149:
   $ #topContainer:
 
-    -- search for '#masthead' in '#topContainer'
     selector ? '#masthead'
 
     $ #masthead:
@@ -9,7 +8,6 @@ visit http://xkcd.com/149:
 
     $ #news:
       text ? 'You can get'
-      -- text ? 'go fuck yourself'
 
   $ #middleContainer:
     selector ? '#ctitle'

@@ -26,6 +26,12 @@ module.exports =  {
 
   failures: [],
 
+  fillSelector: function(selector, value) {
+    page.evaluate(function(obj) {
+      document.querySelector(obj.selector).value = obj.value;
+    }, {selector: selector, value: value});
+  },
+
   getTextBySelector: function(selector) {
     return page.evaluate(function(s) {
       return document.querySelector(s).textContent;
@@ -81,6 +87,12 @@ module.exports =  {
 
   stop: function(t) {
     this.time = t - this.started;
+  },
+
+  submitSelector: function(selector) {
+    page.evaluate(function(s) {
+      document.querySelector(s).submit();
+    }, selector);
   },
 
   urlMatches: function(regex) {

@@ -2,7 +2,7 @@ var $ = require('sudoclass');
 
 var Lexer = function() {
   // spec keywords that will be rewritten into code fragments
-  this.keywords = ['text', 'click', 'link', 'selector', 'url'];
+  this.keywords = ['text', 'click', 'fill', 'submit', 'form', 'url', 'link', 'selector'];
   this.regexes = {
     comment: /^--\s*.*/,
     whitespace: /^[^\n\S]+/,

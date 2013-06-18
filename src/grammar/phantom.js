@@ -29,9 +29,14 @@ module.exports = {
   URL: {
     '^=': 'urlMatches'
   },
+  FILL: 'fillSelector',
+  SUBMIT: {
+    'selector': 'submitSelector'
+  },
   clickSelector: "test.click('${selector}');\n",
-  // exists so that the rewriter knows to place subsequent tests in an onUrlChanged block
+  // exists so that the rewriter knows to place subsequent tests in a new block
   clickLink: "test.click('${selector}');\n",
+  fillSelector: "test.fillSelector('${selector}', '${value}');\n",
   page: "var page = require('webpage').create(), ",
   selectorExists: "test.selectorExists('${selector}');\n",
   selectorHasText: "test.selectorHasText('${selector}', '${text}');\n",
@@ -42,5 +47,10 @@ module.exports = {
   stop: "test.stop(new Date().getTime());\ntest.report(${num});\nphantom.exit();\n",
   // the outer part of the test template, everything but the 'steps'
   page: "var page, rPage = require('webpage'), test = require('../src/utils/test'),\nsteps = [${steps}],\nnext = function(url) {\nif(page) page.close();\npage = rPage.create();\npage.open(url, steps.shift());\n};\nnext('${visit}');",
-  step: "function(status) {\nif(status !== 'success') console.log('Network error');\nelse {\n${body}}\n}"
+  step: "function(status) {\nif(status !== 'success') console.log('Network error');\nelse {\n${body}}\n}",
+  submitSelector: "test.submitSelector('${selector}');\n",
+  // some tokens have no asserts, but 2 references
+  twoRefs: {
+    FILL: true
+  }
 };
