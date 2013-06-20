@@ -10,6 +10,8 @@ var $ = require('sudoclass'),
   standards = require('../grammar/standards'),
   // delegate to the iterator to get ordered steps
   Iterator = require('../iterator'),
+  // all fixtures should be in this Object
+  fixtures = require('../../fixtures/all.js');
 
   Rewriter = function() {
     this.construct();
@@ -25,6 +27,10 @@ Rewriter.prototype = $.extend(Object.create($.Base.prototype), {
     // observe the parsers tokens key and have the iterator
     // prepare those as an instruction set
     delegator.observe(this.getInstructionSet.bind(this));
+  },
+  // the value entered in the spec for a fill operation may be a fixture
+  checkFill: function(fill) {
+    return $.getPath(fill, fixtures) || fill;
   },
   // before we can begin to write the output for the tmp file
   // the iterator needs to organize the tokens
@@ -42,14 +48,17 @@ Rewriter.prototype = $.extend(Object.create($.Base.prototype), {
   // continuing the string started by the require, 
   // build the content for the eventual script file
   rewrite: function(instructions) {
-    var code = standards.header, steps = [],
+    var code = standards.header, pages = [], continues = [], stopped = false,
       curr, visit, query, currentSelector, step, where;
     // only visits live at the top level of the inst set
     while((visit = instructions.shift())) {
       // reset per visit
       this.assertCount = 0;
+      this.waitCount = 0;
       // place the timer start in the first 'step'
-      this.assertions = [grammar.start];
+      this.pages = [grammar.start];
+      this.predicates = [];
+      this.continues = [];
       // bad if not a visit
       if(visit.shift() !== 'VISIT') {
         delegator.set('error', this.visitError);
@@ -62,14 +71,13 @@ Rewriter.prototype = $.extend(Object.create($.Base.prototype), {
       // stack or unstack selectors
       while((query = visit.shift())) {
         currentSelector = [];
-        assertions = [];
         // bad if not a query
         if(query.shift() !== 'QUERY') {
           delegator.set('error', this.queryError);
           return;
         }
         currentSelector.push(query.shift());
-        // now we should be left with [ID][ASSERT][REF]* or
+        // now we should be left with [step][two][three] or
         // another query that just stacks the selector
         // shift them out til they're gone
         while(query.length) {
@@ -79,14 +87,29 @@ Rewriter.prototype = $.extend(Object.create($.Base.prototype), {
         }
       }
     }
-    // each assertions index is the body for a 'step'.
-    // wrap them in the step tmpl and keep in an array
-    // the last will need the 'stop' lines appended
-    for(curr; this.assertions.length && (curr = this.assertions.shift());) {
-      if(!this.assertions.length) curr += grammar.stop.expand({num: this.assertCount});
-      steps.push(grammar.step.expand({body: curr}));
+    // if there are continues, the final block will need to contain the 'stop'
+    for(curr; this.continues.length && (curr = this.continues.shift());) {
+      if(!this.continues.length) {
+        curr += grammar.stop.expand({num: this.assertCount});
+        stopped = true;
+      }
+      // wrap each block in a standard function
+      continues.push(standards.fn.expand({args: '', body: curr}));
     }
-    code += grammar.page.expand({steps: steps, visit: where});
+    // each pages index is the body for a 'page'.
+    // wrap them in the page tmpl and keep in an array
+    // the last will need the 'stop' lines appended if not in a continues
+    for(curr; this.pages.length && (curr = this.pages.shift());) {
+      if(!this.pages.length && !stopped) curr += grammar.stop.expand({num: this.assertCount});
+      pages.push(grammar.page.expand({body: curr}));
+    }
+    // predicates, continues and pages
+    code += grammar.vars.expand({
+      predicates: this.predicates.join(','),
+      continues: continues.join(','),
+      pages: pages.join(','),
+      visit: where
+    });
     this.delegator.set('code', code);
   },
 
@@ -124,7 +147,8 @@ Rewriter.prototype = $.extend(Object.create($.Base.prototype), {
       case 'selectorExists':
       case 'selectorDoesntExist':
         this.addsertion(grammar[nt].expand({
-          selector: (selector.join(' ') + ' ' + three[1])
+          selector: (selector.join(' ') + ' ' + three[1]),
+          waiting: !!this.isPredicate
         }));
         this.assertCount++;
         break;
@@ -133,19 +157,21 @@ Rewriter.prototype = $.extend(Object.create($.Base.prototype), {
       case 'selectorDoesntHaveText':
         this.addsertion(grammar[nt].expand({
           selector: selector.join(' '),
-          text: three[1]
+          text: three[1],
+          waiting: !!this.isPredicate
         }));
         this.assertCount++;
         break;
 
       case 'clickLink':
+      case 'clickSubmit':
         this.addsertion(grammar[nt].expand({
           selector: (selector.join(' ') + ' ' + three[1])
         }));
         // push in a 'urlChanged' as the last entry of this step
         this.addsertion(grammar.onUrlChanged);
         // causes a new block to be started, on a new phantom page
-        this.assertions.push('');
+        this.pages.push('');
         break;
 
       case 'clickSelector':
@@ -157,7 +183,7 @@ Rewriter.prototype = $.extend(Object.create($.Base.prototype), {
       case 'fillSelector':
         this.addsertion(grammar[nt].expand({
           selector: (selector.join(' ') + ' ' + two[1]),
-          value: three[1]
+          value: this.checkFill(three[1])
         }));
         break;
 
@@ -168,7 +194,20 @@ Rewriter.prototype = $.extend(Object.create($.Base.prototype), {
         // url will change
         this.addsertion(grammar.onUrlChanged);
         // starts a new phantom page
-        this.assertions.push('');
+        this.pages.push('');
+        break;
+
+      case 'waitFor':
+        // the next (non-query) will be a predicate Followed by 
+        // statements that need to go in a continues
+        this.addsertion(grammar.waitFor.expand({
+          count: this.waitCount,
+          msg: three[1]
+        }));
+        this.isPredicate = true;
+        // 'prime the contiues block'
+        this.continues.push('');
+        this.waitCount++;
         break;
 
       case 'urlMatches':
@@ -190,8 +229,19 @@ Rewriter.prototype = $.extend(Object.create($.Base.prototype), {
 
   // yeah thats right. Addsertion.
   addsertion: function(assertion, collection) {
-    collection || (collection = this.assertions);
-    collection[collection.length - 1] += assertion;
+    // the collection ta add to depends on the state of the test
+    if(!collection) {
+      if(this.isPredicate) {
+        // predicates do not stack, but need to be wrapped in an expression
+        assertion = standards.expression.expand({args: '', body: assertion});
+        this.predicates.push(assertion);
+        this.isPredicate = false;
+        // the next series of assertions will go in a continues block
+        this.isContinues = true;
+      } else if (this.isContinues) {
+        this.continues[this.continues.length - 1] += assertion;
+      } else this.pages[this.pages.length - 1] += assertion;
+    } else collection[collection.length - 1] += assertion;
   }
 });
 

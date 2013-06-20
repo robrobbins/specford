@@ -67,6 +67,7 @@ Iterator.prototype = $.extend({}, {
                 query = token;
                 // the queryStack will have been emptied by this point
                 instructions[visitCount - 1].push(query);
+                break;
               } else {
                 if(token.indented > queryStack[queryLevel - 1].indented) {
                   // push this in to that one and bail

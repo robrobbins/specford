@@ -9,18 +9,28 @@ module.exports =  {
     }, selector);
   },
 
+  execute: function(js) {
+    page.evaluateJavaScript(js);
+  },
+
   fail: {
     doesntHaveText: function(selector, ref) {
       return selector + ' contains text "' + ref + '".';
     },
-    exists: function(selector) {
+    doesntExist: function(selector) {
       return selector + ' exists.';
+    },
+    exists: function(selector) {
+      return selector + ' does not exist.';
     },
     hasText: function(selector, ref) {
       return selector + ' does not contain text "' + ref + '".';
     },
     urlMatches: function(regex) {
       return 'Current URL does not match ' + regex;
+    },
+    waitFor: function(msg) {
+      return 'Wait for "' + msg + '" timed out';
     }
   },
 
@@ -63,22 +73,33 @@ module.exports =  {
     }
   },
 
-  selectorDoesntHaveText: function(selector, ref) {
+  selectorDoesntHaveText: function(selector, ref, waiting) {
     var text = this.getTextBySelector(selector);
-    return this.run(!text.match(ref), selector, ref, 'doesntHaveText');   
+    return waiting ? !text.match(ref) :
+      this.run(!text.match(ref), selector, ref, 'doesntHaveText');
   },
 
-  selectorExists: function(selector) {
+  selectorDoesntExist: function(selector, waiting) {
     var res = page.evaluate(function(s) {
       return document.querySelector(s);
     }, selector);
 
-    return this.run(res, selector, null, 'exists');
+    return waiting ? !res : this.run(!res, selector, null, 'doesntExist');
   },
 
-  selectorHasText: function(selector, ref) {
+  selectorExists: function(selector, waiting) {
+    var res = page.evaluate(function(s) {
+      return document.querySelector(s);
+    }, selector);
+
+    return waiting ? res : this.run(res, selector, null, 'exists');
+  },
+
+  // if waiting, return the basic test not the run
+  selectorHasText: function(selector, ref, waiting) {
     var text = this.getTextBySelector(selector);
-    return this.run(text.match(ref), selector, ref, 'hasText');
+    return waiting ? text.match(ref) : 
+      this.run(text.match(ref), selector, ref, 'hasText');
   },
 
   start: function(t) {
@@ -98,6 +119,19 @@ module.exports =  {
   urlMatches: function(regex) {
     var url = page.evaluate(function(){return window.location.href;});
     return this.run(url.match(regex), regex, null, 'urlMatches');
+  },
+
+  waitFor: function(predicate, continues, msg) {
+    var toMs = 3000, start = new Date().getTime(), condition = false,
+      interval = setInterval(function() {
+        if((new Date().getTime() - start < toMs) && !condition) {
+          condition = predicate();
+        } else {
+          clearInterval(interval);
+          test.run(condition, msg, null, 'waitFor');
+          continues();
+        }
+      }, 250);
   },
 
   write: function(what) {
