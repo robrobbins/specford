@@ -141,4 +141,5 @@ Here, Specford:
 2. Sets the 'query' **context** to the **element id='baz'**
 3. Begins checking the **context textContent** for 'bar' every 250ms for up to 3 seconds
 
-If the text is found within the **3 second window** it passes and fails if not. Either way testing continues after. 
+If the text is found within the **3 second window** it passes and fails if not. Either way testing continues after. Note that
+Specford marks **the first non-query command** following a 'wait for' as the statement to execute in the 'timed manner'. 
