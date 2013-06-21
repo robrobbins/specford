@@ -36,7 +36,7 @@ Parser.prototype = $.extend(Object.create($.Model.prototype), {
   // storts the chain that leads to the writing of the script file(s)
   read: function(next) {
     if(next) this.next = next;
-
+    console.log(this.get('path'));
     fs.exists(this.get('path'), function(exists) {
       exists ? this.readFile() : this.error('FINDERROR');
     }.bind(this));
