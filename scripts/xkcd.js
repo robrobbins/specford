@@ -6,6 +6,22 @@ pages = [function(status) {
 if(status !== 'success') console.log('Network error');
 else {
 test.start(new Date().getTime());
+test.selectorExists('#topContainer #masthead', false);
+test.selectorHasText('#topContainer #masthead', 'A webcomic of', false);
+test.selectorHasText('#topContainer #news', 'You can get', false);
+test.selectorExists('#middleContainer #ctitle', false);
+test.selectorHasText('#middleContainer', 'Sandwich', false);
+test.click('#middleContainer .comicNav a[rel="next"]');
+page.onUrlChanged = function(targetUrl) {next(targetUrl);};
+}
+},function(status) {
+if(status !== 'success') console.log('Network error');
+else {
+test.urlMatches(/xkcd.com\/150/);
+test.selectorHasText('#middleContainer', 'Grownups', false);
+test.stop(new Date().getTime());
+test.report(7);
+phantom.exit();
 }
 }],
 next = function(url) {

@@ -12,12 +12,11 @@ var walk = require('walk'),
   parser, specWalker, count;
 
 compileSpec = function(path) {
-  parser = new Parser('specs/' + path + '.spec');
-  parser.read();
+  new Parser('specs/' + path + '.spec').read();
 };
 
 compileSpecs = function() {
-  parser = new Parser(); count = 0;
+  var count = 0;
 
   specWalker = walk.walk('specs/', walkOpts);
 
@@ -28,9 +27,8 @@ compileSpecs = function() {
   specWalker.on('file', function(root, stats, next) {
     if(stats.name !== '.DS_Store') {
       count++;
-      parser.set('path', root + stats.name);
-      // pass the next to the Parser to be called when ready
-      parser.read(next);
+      new Parser(root + stats.name).read();
+      next();
     } else next();
   });
 

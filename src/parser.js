@@ -8,10 +8,8 @@ var fs = require('fs'),
   Parser = function(path) {
     this.construct({path: path});
     $.extend(this, $.extensions.observable);
-
-    // the filewriter sets the 'specWritten' key when done
-    // thats our que to call next on the walker
-    this.observe(this.reset.bind(this));
+    
+    this.observe(this.onError.bind(this));
 
     // the Lexer Delegate will Observe the Parser's
     // 'fileContents' key and tokenize it when available
@@ -34,9 +32,7 @@ var fs = require('fs'),
 
 Parser.prototype = $.extend(Object.create($.Model.prototype), {
   // storts the chain that leads to the writing of the script file(s)
-  read: function(next) {
-    if(next) this.next = next;
-    console.log(this.get('path'));
+  read: function() {
     fs.exists(this.get('path'), function(exists) {
       exists ? this.readFile() : this.error('FINDERROR');
     }.bind(this));
@@ -44,19 +40,18 @@ Parser.prototype = $.extend(Object.create($.Model.prototype), {
   error: function(which) {
     this.set('error', this[which].expand([this.get('path')]));
   },
+
+  onError: function(change) {
+    if(change.name === 'error') {
+      console.log(change.object.error);
+    }
+  },
+
   readFile: function() {
     fs.readFile(this.get('path'), 'utf8', function(err, data) {
       if(err) return this.error('READERROR');
       this.set('fileContents', data);
     }.bind(this));
-  },
-  reset: function(change) {
-    if(change.name === 'specWritten') {
-      // manipulating the hash directly wont trigger any observers
-      delete this.data.tokens;
-      delete this.data.code;
-      if(this.next) this.next();
-    }
   }
 });
 
