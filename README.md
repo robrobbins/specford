@@ -99,8 +99,46 @@ Or:
 
 Both examples begin with the `click` keyword and end with a reference (again any legal css selector) but vary in the middle.
 The second piece to the click command tells specford to expect a **URL change** or not. The first variant, `click selector`
-does not cause a listener for **URL change** to be employed (but may be paired with the `wait for` command...). The second, 
-`click link` does (the `click submit` would as well). Any further statements will be executed once the web page has reloaded.
+does not cause a listener for **URL change** to be employed (but may be paired with the `wait for` command... more on that later). 
+The second, `click link` and third `click submit` do. Any further statements will be executed once the web page has reloaded.
 You, the developer, don't need to be cognizant of this. Just write your spec...
 
 ###Filling Inputs
+
+The `fill` command has a slight variant in its syntax, it takes 2 references:
+
+    fill 'input.foo' 'bar baz'
+
+This would find the **input class='foo' in the current context** and fill it with the **value** 'bar baz'.
+
+####Fill And Fixtures
+
+Specford utilizes **fixtures** in the form of an **Object Literal**. The `fill` command understands this and
+checks to see if the second 'reference' (the third piece) of a `fill` statement matches a key (or 'key path') in
+the loaded fixture Object. If so, the **value** located at that key (or 'path') is used as the `fill` value.
+
+###Waiting For *
+
+As alluded to in "Clicking Things" the `click selector` command doesn't set a listener for **URL change**, in fact it
+doesn't do anything but click something. It is a common issue then to need to check that _something_ happened. The
+_something_ that should happen though may not happen immediately. It may be an animation, an AJAX operation or 
+what-have-you. The `wait for` operation solves this:
+
+    wait for 'bar to be in baz'
+
+Alone, however, it doesn't make much sense. The typical use case would be to have something before it, like a `click`, then
+something after, such as a 'query' and an existential operation:
+
+    click selector '.foo'
+
+    $ #baz:
+      wait for 'bar to be in baz'
+      text ? 'bar'
+
+Here, Specford:
+
+1. Clicks the **element class='foo'**
+2. Sets the 'query' **context** to the **element id='baz'**
+3. Begins checking the **context textContent** for 'bar' every 250ms for up to 3 seconds
+
+If the text is found within the **3 second window** it passes and fails if not. Either way testing continues after. 
