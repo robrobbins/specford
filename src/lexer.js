@@ -2,7 +2,7 @@ var $ = require('sudoclass');
 
 var Lexer = function() {
   // spec keywords that will be rewritten into code fragments
-  this.keywords = ['text', 'click', 'fill', 'wait', 'submit', 'url', 'link', 'selector', 'for'];
+  this.keywords = ['text', 'click', 'fill', 'wait', 'url', 'selector', 'for'];
   this.regexes = {
     comment: /^--\s*.*/,
     whitespace: /^[^\n\S]+/,
@@ -13,7 +13,7 @@ var Lexer = function() {
     reference: /^'([^"].*?)'/,
     number: /^([0-9]+)/,
     // == is truthy != is falsy etc
-    assert: /^([!]*\?|[<>\!\^=]=)/,
+    assert: /^(exists|doesNotExist|equals|doesNotEqual|isVisible|isNotVisible)/,
     vistBlock: /^visit\s+(.*):/,
     queryBlock: /^\$\s*(.*):/
   };

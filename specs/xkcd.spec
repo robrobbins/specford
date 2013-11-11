@@ -1,23 +1,23 @@
 visit http://xkcd.com/149:
   $ #topContainer:
 
-    selector ? '#masthead'
+    selector '#masthead' exists
 
     $ #masthead:
-      text ? 'A webcomic of'
+      text 'A webcomic of' exists
 
     $ #news:
-      text ? 'You can get'
+      text 'You can get' exists
 
   $ #middleContainer:
-    selector ? '#ctitle'
+    selector '#ctitle' exists
 
-    text ? 'Sandwich'
+    text 'Sandwich' exists
 
     $ .comicNav:
       click link 'a[rel="next"]'
 
-      url ^= '/xkcd.com\/150/'
+      url matches '/xkcd.com\/150/'
 
   $ #middleContainer:
-    text ? 'Grownups'
+    text 'Sandwich' exists
