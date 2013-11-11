@@ -1,7 +1,7 @@
 var fs = require('fs'),
   $ = require('sudoclass'),
   Lexer = require('./lexer'),
-  Rewriter = require('./rewriter/phantom'),
+  Rewriter = require('./rewriter/zombie'),
   Filewriter = require('./filewriter');
 
   // the parser reads a config JSON file and transforms it inta a set of instructions

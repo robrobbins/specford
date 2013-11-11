@@ -8,7 +8,7 @@ len=${#args[@]}
 if [ $len -gt 0 ]; then
   for f in $args
   do
-    phantomjs "scripts/$f.js"
+    node "scripts/$f.js"
   done
 else
 # if there arent any just run averything in the scripts dir
@@ -16,7 +16,7 @@ else
   for file in *
   do
     if [ -f "$file" ]; then
-      phantomjs $file
+      node $file
     fi
   done
   cd ..

@@ -1,7 +1,7 @@
 visit https://developer.mozilla.org/en-US/:
   $ section.home-search:
     fill 'form input[name="q"]' 'input value'
-    submit selector 'form'
+    click selector 'form'
 
   $ section#content-main:
-    selector ? 'div#search-results'
+    selector 'div#search-results' exists

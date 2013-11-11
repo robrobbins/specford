@@ -1,23 +1,11 @@
-var fs = require('fs'), colorizer = require('./colorizer');
+var colorizer = require('./colorizer');
 
 module.exports =  {
-  click: function(selector) {
-    page.evaluate(function(s) {
-      var ev = document.createEvent("MouseEvents");
-      ev.initMouseEvent('click', true, true);
-      document.querySelector(s).dispatchEvent(ev);
-    }, selector);
-  },
-
-  execute: function(js) {
-    page.evaluateJavaScript(js);
-  },
-
   fail: {
-    doesntHaveText: function(selector, ref) {
+    doesNotHaveText: function(selector, ref) {
       return selector + ' contains text "' + ref + '".';
     },
-    doesntExist: function(selector) {
+    doesNotExist: function(selector) {
       return selector + ' exists.';
     },
     exists: function(selector) {
@@ -36,16 +24,8 @@ module.exports =  {
 
   failures: [],
 
-  fillSelector: function(selector, value) {
-    page.evaluate(function(obj) {
-      document.querySelector(obj.selector).value = obj.value;
-    }, {selector: selector, value: value});
-  },
-
   getTextBySelector: function(selector) {
-    return page.evaluate(function(s) {
-      return document.querySelector(s).textContent;
-    }, selector);
+    return this.browser.query(selector).textContent;
   },
 
   report: function(num) {
@@ -73,33 +53,29 @@ module.exports =  {
     }
   },
 
-  selectorDoesntHaveText: function(selector, ref, waiting) {
+  selectorDoesNotHaveText: function(selector, ref) {
     var text = this.getTextBySelector(selector);
-    return waiting ? !text.match(ref) :
-      this.run(!text.match(ref), selector, ref, 'doesntHaveText');
+    return this.run(!text.match(ref), selector, ref, 'doesNotHaveText');
+  },
+  
+  selectorDoesNotExist: function(selector) {
+    var res = this.browser.query(selector);
+    return this.run(!res, selector, null, 'doesNotExist');
   },
 
-  selectorDoesntExist: function(selector, waiting) {
-    var res = page.evaluate(function(s) {
-      return document.querySelector(s);
-    }, selector);
-
-    return waiting ? !res : this.run(!res, selector, null, 'doesntExist');
-  },
-
-  selectorExists: function(selector, waiting) {
-    var res = page.evaluate(function(s) {
-      return document.querySelector(s);
-    }, selector);
-
-    return waiting ? res : this.run(res, selector, null, 'exists');
+  selectorExists: function(selector) {
+    var res = this.browser.query(selector);
+    return this.run(res, selector, null, 'exists');
   },
 
   // if waiting, return the basic test not the run
-  selectorHasText: function(selector, ref, waiting) {
+  selectorHasText: function(selector, ref) {
     var text = this.getTextBySelector(selector);
-    return waiting ? text.match(ref) : 
-      this.run(text.match(ref), selector, ref, 'hasText');
+    return this.run(text.match(ref), selector, ref, 'hasText');
+  },
+  
+  setBrowserRef: function(browser) {
+    this.browser = browser;
   },
 
   start: function(t) {
@@ -110,31 +86,14 @@ module.exports =  {
     this.time = t - this.started;
   },
 
-  submitSelector: function(selector) {
-    page.evaluate(function(s) {
-      document.querySelector(s).submit();
-    }, selector);
-  },
-
   urlMatches: function(regex) {
-    var url = page.evaluate(function(){return window.location.href;});
+    var url = this.browser.window.location.href;
     return this.run(url.match(regex), regex, null, 'urlMatches');
   },
 
-  waitFor: function(predicate, continues, msg) {
-    var toMs = 3000, start = new Date().getTime(), condition = false,
-      interval = setInterval(function() {
-        if((new Date().getTime() - start < toMs) && !condition) {
-          condition = predicate();
-        } else {
-          clearInterval(interval);
-          test.run(condition, msg, null, 'waitFor');
-          continues();
-        }
-      }, 250);
-  },
+  waitFor: function() {},
 
   write: function(what) {
-    fs.write('/dev/stdout', what, 'w');
+    process.stdout.write(what);
   }
 };
