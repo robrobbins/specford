@@ -1,5 +1,5 @@
 var P = require('../src/parser'),
-  R = require('../src/rewriter');
+  R = require('../src/rewriter/zombie');
 
 describe('Rewriter', function() {
   beforeEach(function() {
