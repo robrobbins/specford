@@ -7,7 +7,7 @@ visit http://xkcd.com/149:
       text 'A webcomic of' exists
 
     $ #news:
-      text 'You can get' exists
+      selector 'img[title="the xkcd store"]' exists
 
   $ #middleContainer:
     selector '#ctitle' exists
@@ -20,4 +20,4 @@ visit http://xkcd.com/149:
       url matches '/xkcd.com\/150/'
 
   $ #middleContainer:
-    text 'Sandwich' exists
+    text 'Grownups' exists

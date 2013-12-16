@@ -16,13 +16,12 @@ pages = [function() {
 if(browser.statusCode !== 200) console.log('Network error');
 else {
 test.start(new Date().getTime());
-console.log(browser.query('section.home-search'));
-//browser.fill('section.home-search form input[name="q"]', 'input value', callbacks.shift());
+browser.fill('section.home-search form input[name="q"]', 'input value', callbacks.shift());
 }
 }],
 next = function(url) {
 if(opened) browser.close();
-browser.open({runScripts: false, loadCSS: false});
+browser.open();
 opened=true;
 test.setBrowserRef(browser);
 browser.visit(url, pages.shift());};

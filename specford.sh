@@ -4,7 +4,7 @@
 args=("$@")
 len=${#args[@]}
 
-# if we have any args, run them in phantom
+# if we have any args, run them in zambie
 if [ $len -gt 0 ]; then
   for f in $args
   do
