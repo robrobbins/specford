@@ -4,7 +4,6 @@ _put this in your spec and smoke it_
 ## Getting started
 First, [install node and npm](http://nodejs.org/)
 ```
-brew install phantomjs
 git clone https://github.com/robrobbins/specford.git
 cd specford
 npm install
@@ -12,7 +11,7 @@ sh specford.sh
 ```
 Create new .spec files in the `specs/` directory. Then, run:
 ```
-node compile.js
+node compile
 sh specford.sh
 ```
 
