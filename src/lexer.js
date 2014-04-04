@@ -15,7 +15,7 @@ var Lexer = function() {
     // == is truthy != is falsy etc
     assert: /^(exists|doesNotExist|equals|doesNotEqual|isVisible|isNotVisible)/,
     vistBlock: /^visit\s+(.*):/,
-    queryBlock: /^\$\s*(.*):/
+    queryBlock: /^query\s*(.*):/
   };
   // indent level will scope selectors
   this.currentIndent = 0;

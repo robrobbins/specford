@@ -28,6 +28,10 @@ module.exports =  {
     return this.browser.query(selector).textContent;
   },
 
+  open: function(app) {
+    this.browser.viewInBrowser(app);
+  },
+  
   report: function(num) {
     var elapsed = Math.floor(this.time / 100) / 10,
       info = colorizer.colorize("\nFinished: " + num + ' assertions in ' + elapsed + 's', 'greenBar', 50),

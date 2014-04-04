@@ -1,23 +1,23 @@
 visit http://xkcd.com/149:
-  $ #topContainer:
+  query #topContainer:
 
     selector '#masthead' exists
 
-    $ #masthead:
+    query #masthead:
       text 'A webcomic of' exists
 
-    $ #news:
-      selector 'img[title="the xkcd store"]' exists
+    query #news:
+      selector 'a img' exists
 
-  $ #middleContainer:
+  query #middleContainer:
     selector '#ctitle' exists
 
     text 'Sandwich' exists
 
-    $ .comicNav:
+    query .comicNav:
       click link 'a[rel="next"]'
 
       url matches '/xkcd.com\/150/'
 
-  $ #middleContainer:
+  query #middleContainer:
     text 'Grownups' exists

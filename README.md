@@ -43,14 +43,14 @@ level when starting another 'visit').
 The second command in a `.spec` file **must be a query**. If you want to act on the entire page
 then `query` the **document body**.
 
-A `query` is performed with the `$` operator and is used to set the context for a series
+A `query` is performed with the `query` operator and is used to set the context for a series
 of statements. Along with the `visit` command `query` begins an indent block. Queries stack,
 and un-stack By indent, so whitespace matters. For example:
 
-    $ #foo:
+    query #foo:
       selector 'h1' exists
       
-      $ .bar:
+      query .bar:
         selector 'a.baz' exists
 
 The first `selector` command looks for an **h1** tag in the element with **id='foo'**, while the second

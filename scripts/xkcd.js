@@ -16,7 +16,7 @@ else {
 test.start(new Date().getTime());
 test.selectorExists('#topContainer #masthead');
 test.selectorHasText('#topContainer #masthead', 'A webcomic of');
-test.selectorExists('#topContainer #news img[title="the xkcd store"]');
+test.selectorExists('#topContainer #news a img');
 test.selectorExists('#middleContainer #ctitle');
 test.selectorHasText('#middleContainer', 'Sandwich');
 browser.clickLink('#middleContainer .comicNav a[rel="next"]', callbacks.shift());

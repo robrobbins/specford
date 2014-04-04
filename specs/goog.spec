@@ -1,4 +1,4 @@
 visit http://google.com:
-  $ body:
+  query body:
     text 'Privacy' exists
     text 'Foo bar baz' doesNotExist
