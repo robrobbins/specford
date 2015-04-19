@@ -2,12 +2,12 @@
 _put this in your spec and smoke it_
 
 ##.spec files
-You tell Specford what to do via '.spec' files. Those .spec files are made up of 
+You tell Specford what to do via '.spec' files. Those .spec files are made up of
 commands that are all **very minimal statements**. Before going into the '.spec' language, let's
 look at a small example:
 
     visit http://google.com:
-      $ body:
+      query body:
         text 'About Google' exists
         text 'Foo bar baz' doesNotExist
 
@@ -49,7 +49,7 @@ and un-stack By indent, so whitespace matters. For example:
 
     query #foo:
       selector 'h1' exists
-      
+
       query .bar:
         selector 'a.baz' exists
 
@@ -63,7 +63,7 @@ The `exists` and `doesNotExist` **assertions** are the key to testing if somethi
 ####Selector
 
 Confirming if an element exists (or doesn`t) is done using the `selector` statement. Typical for **.spec** commands it
-is in 3 parts: **operator reference assertion** (in most cases, some are reversed): 
+is in 3 parts: **operator reference assertion** (in most cases, some are reversed):
 
     selector 'div#foo' exists
 
@@ -73,15 +73,11 @@ Also you could do:
 
 #####A Note On The Reference Component
 
-The second piece of the `seletor` existential command is the `reference`. **It must be in single quotes**. Double quotes
-may follow, and often will be nested within, but the outer most quotes must be single. Specford knows to handle references 
-differently, as they are not part of the `.spec` language. You could think of them as _strings_. The 'reference' to a 'selector'
-command **can be any legal css selector**.
+The second piece of the `seletor` existential command is the `reference`. **It must be in single quotes**. Double quotes may follow, and often will be nested within, but the outer most quotes must be single. Specford knows to handle references differently, as they are not part of the `.spec` language. You could think of them as _strings_. The 'reference' to a 'selector' command **can be any legal css selector**.
 
 ####Text
 
-Tries to match the `reference` against the **current context**'s **textContent**. The **current context** being whatever has 
-been set through a previous `query` operation. In the form `text <reference> <assertion>`.
+Tries to match the `reference` against the **current context**'s **textContent**. The **current context** being whatever has been set through a previous `query` operation. In the form `text <reference> <assertion>`.
 
 ###Clicking Things
 
@@ -98,7 +94,7 @@ Or:
     click submit 'button.submit'
 
 Both examples begin with the `click` keyword and end with a reference (again any legal css selector) but vary in the middle.
-Specford understands the differences between selectors, links, and submitting a form. You, the developer, don't need to be cognizant of this. 
+Specford understands the differences between selectors, links, and submitting a form. You, the developer, don't need to be cognizant of this.
 Just write your spec... Obviously, there could be overlap with these commands. You could use `click selector ...` for all of these,
 but by being explicit in your spec language, pertaining to **what** you are clicking, produces superior readability.
 
