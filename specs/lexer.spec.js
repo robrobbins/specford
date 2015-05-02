@@ -64,4 +64,41 @@ describe('The Lexer', function() {
     expect(eq).toEqual([['REFERENCE', 'foo'], ['ASSERT', 'equals'], ['REFERENCE', 'bar']]);
   });
 
+  it('tokenizes !equals', function() {
+    var neq = this.l.tokenize("'foo' doesNotEqual 'bar'");
+
+    expect(neq).toEqual([['REFERENCE', 'foo'], ['ASSERT', 'doesNotEqual'], ['REFERENCE', 'bar']]);
+  });
+
+  it('tokenizes isVisible', function() {
+    var viz = this.l.tokenize("'foo' isVisible");
+
+    expect(viz).toEqual([['REFERENCE', 'foo'], ['ASSERT', 'isVisible']]);
+  });
+
+  it('tokenizes isNotVisible', function() {
+    var nviz = this.l.tokenize("'foo' isNotVisible");
+
+    expect(nviz).toEqual([['REFERENCE', 'foo'], ['ASSERT', 'isNotVisible']]);
+  });
+
+  it('recognizes text', function() {
+    var txt = this.l.tokenize("text 'foo'");
+
+    expect(txt).toEqual([['TEXT', 'text'], ['REFERENCE', 'foo']]);
+
+  });
+
+  it('recognizes click', function() {
+    var clik = this.l.tokenize("click 'foo'");
+
+    expect(clik).toEqual([['CLICK', 'click'], ['REFERENCE', 'foo']]);
+
+  });
+
+  it('recognizes indent', function() {
+    var i = this.l.tokenize('query foo:\n  selector');
+    expect(i[0].indented).toBe(2);
+
+  });
 });

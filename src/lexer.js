@@ -133,7 +133,7 @@ class Lexer {
     // base case is there are no more slices
     if (!slice) return this.tokens;
     else {
-      this.methodList.some(function(meth) {return this[meth](slice);}, this);
+      this.methodList.some( meth => this[meth](slice) );
       // move the 'pointer' along in the file
       i += this.taken || 1;
       // will be falsy at the end
@@ -144,8 +144,6 @@ class Lexer {
     }
   }
 
-  // TODO listener for file contents...
-  tokenizeFileContents() {}
 }
 
 module.exports = Lexer;
