@@ -7,9 +7,7 @@
 class Iterator {
   constructor() {
     this.singles = ['VISIT', 'QUERY'];
-
   }
-
 
   initialize(tokens) {
     this.tokens = tokens;
@@ -24,7 +22,7 @@ class Iterator {
 
       return {
         next: () => {
-          let step = { tokens: null, scope: ''};
+          let step = { tokens: null, selector: ''};
 
           if (tokens.length) {
             let t = tokens[0];
@@ -37,11 +35,11 @@ class Iterator {
                 qStack.push(t[1]);
                 qLevels[t[1]] = t.indented;
               }
-              step.tokens = tokens.shift();
+              step.tokens = [tokens.shift()];
               return { value: step, done: false};
             } else {
               step.tokens = tokens.splice(0, 3);
-              step.scope = qStack.join(' ');
+              step.selector = qStack.join(' ');
               return { value: step, done: false};
             }
           } else return {value: undefined, done: true };

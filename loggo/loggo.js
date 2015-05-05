@@ -1,7 +1,6 @@
 require('babel/register');
 
-module.exports = {
-
+var functions = {
   lexer: function(spec) {
     var l = require('./lexer-log');
     l.run(spec);
@@ -12,3 +11,5 @@ module.exports = {
     i.run(spec);
   }
 };
+
+functions[process.argv[2]](process.argv[3]);

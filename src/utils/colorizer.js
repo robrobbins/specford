@@ -15,7 +15,7 @@ module.exports = {
     skip: {fg: 'magenta', bold: true},
     skipBar: {bg: 'magenta', fg: 'white', bold: true}
   },
-  colorize: function(text, style, pad) {
+  color: function(text, style, pad) {
     if(!(style in this.styles)) return text;
     return this.format(text, this.styles[style], pad);
   },
