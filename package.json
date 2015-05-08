@@ -1,0 +1,22 @@
+{
+  "name": "http-server",
+  "preferGlobal": true,
+  "version": "0.0.1",
+  "author": "Rob Robbins",
+  "description": "Put this in your spec and smoke it.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/robrobbins/specford.git"
+  },
+  "keywords": [
+    "specs",
+    "tdd",
+    "testing"
+  ],
+  "dependencies" : {
+    "walk": "*",
+    "util": "*",
+    "sudoclass": "*",
+    "zombie": "*"
+  }
+}

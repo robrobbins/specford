@@ -1,6 +1,20 @@
 #Specford
 _put this in your spec and smoke it_
 
+## Getting started
+First, [install node and npm](http://nodejs.org/)
+```
+git clone https://github.com/robrobbins/specford.git
+cd specford
+npm install
+sh specford.sh
+```
+Create new .spec files in the `specs/` directory. Then, run:
+```
+node compile
+sh specford.sh
+```
+
 ##.spec files
 You tell Specford what to do via '.spec' files. Those .spec files are made up of
 commands that are all **very minimal statements**. Before going into the '.spec' language, let's
