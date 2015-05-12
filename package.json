@@ -1,0 +1,24 @@
+{
+  "version": "0.1.1",
+  "author": "Rob Robbins",
+  "description": "Put this in your spec and smoke it.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/robrobbins/specford.git"
+  },
+  "keywords": [
+    "integration",
+    "specs",
+    "testing",
+    ".spec"
+  ],
+  "dependencies" : {
+    "babel": "*",
+    "yargs": "*",
+    "gulp": "*",
+    "through2": "*",
+    "gulp-util": "*",
+    "gulp-ext-replace": "*",
+    "gulp-jasmine": "*"
+  }
+}

@@ -9,6 +9,16 @@ var functions = {
   iterator: function(spec) {
     var i = require('./iterator-log');
     i.run(spec);
+  },
+
+  rewriter: function(spec) {
+    var r = require('./rewriter-log');
+    r.run(spec);
+  },
+
+  parser: function(spec) {
+    var p = require('./parser-log');
+    p.run(spec);
   }
 };
 

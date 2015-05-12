@@ -40,6 +40,12 @@ describe('The Lexer', function() {
     expect(tokens).toEqual([['IDENTIFIER', 'notRef'], ['REFERENCE', 'isRef']]);
   });
 
+  it("tokenizes after", function() {
+    var tokens = this.l.tokenize("after url change");
+
+    expect(tokens).toEqual([['AFTER', 'after'], ['URL', 'url'], ['IDENTIFIER', 'change']]);
+  });
+
   it('tokenizes numbers', function() {
     var tokens = this.l.tokenize('2015');
 
@@ -52,6 +58,12 @@ describe('The Lexer', function() {
     expect(exists).toEqual([['REFERENCE', 'foo'], ['ASSERT', 'exists']]);
   });
 
+  it('tokenizes selector', function() {
+    var exists = this.l.tokenize("selector '.foo' exists");
+
+    expect(exists).toEqual([['SELECTOR', 'selector'], ['REFERENCE', '.foo'], ['ASSERT', 'exists']]);
+  });
+
   it('tokenizes !exists', function() {
     var nexists = this.l.tokenize("'foo' doesNotExist");
 
@@ -62,6 +74,12 @@ describe('The Lexer', function() {
     var eq = this.l.tokenize("'foo' equals 'bar'");
 
     expect(eq).toEqual([['REFERENCE', 'foo'], ['ASSERT', 'equals'], ['REFERENCE', 'bar']]);
+  });
+
+  it("tokenizes fill cadence", function() {
+    var fill = this.l.tokenize("fill '.foo' 'bar'");
+
+    expect(fill).toEqual([['FILL', 'fill'], ['REFERENCE', '.foo'], ['REFERENCE', 'bar']]);
   });
 
   it('tokenizes !equals', function() {
@@ -90,10 +108,9 @@ describe('The Lexer', function() {
   });
 
   it('recognizes click', function() {
-    var clik = this.l.tokenize("click 'foo'");
+    var clik = this.l.tokenize("click selector '.foo'");
 
-    expect(clik).toEqual([['CLICK', 'click'], ['REFERENCE', 'foo']]);
-
+    expect(clik).toEqual([['CLICK', 'click'], ['SELECTOR', 'selector'], ['REFERENCE', '.foo']]);
   });
 
   it('recognizes indent', function() {

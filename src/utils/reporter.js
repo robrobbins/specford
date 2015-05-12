@@ -1,33 +1,32 @@
-var fs = require('fs');
-var colorizer = require('./colorizer');
+var Logger = require('./logger');
+var log = new Logger;
+var expand = require('./util').expand;
 
-var Reporter = function() {};
+var Reporter = function() {
+  this.finished = "\nFinished ${total} assertions in ${elapsed}s";
+  this.count = "Failed: ${count}";
+};
 
 Reporter.prototype.passed = function() {
-  this.write(colorizer.color('.', 'info'));
+  log.write('.', 'greenBold');
 };
 
 Reporter.prototype.failed = function() {
-  this.write(colorizer.color('f', 'error'));
-};
-
-Reporter.prototype.write = function(result) {
-  fs.write('/dev/stdout', result, 'w');
+  log.write('f', 'redBold');
 };
 
 Reporter.prototype.summarize = function(elapsed, total, failures) {
   elapsed = Math.floor(elapsed / 100) / 10;
-  var info = colorizer.color(
-    "\nFinished: " + total + ' assertions in ' + elapsed + 's', 'parameter');
-    //passed = colorizer.colorize('Passed: ' +passes, 'greenBar', 24),
-  var failed = colorizer.color('Failed: ' + failures.length, 'error');
 
-  console.log(info);
-  //this.write(passed);
+  let info = expand(this.finished, { total: total, elapsed: elapsed });
+  let failed = expand(this.count, { count: failures.length });
+
+  log.unstamped(info, 'cyan');
+
   if (failures.length) {
-    console.log(failed);
+    log.unstamped(failed, 'red');
     failures.forEach(function(fail) {
-      console.log(colorizer.color(fail, 'comment'));
+      log.unstamped(fail, 'yellow');
     });
   }
 };
