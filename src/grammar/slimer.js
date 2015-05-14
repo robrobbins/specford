@@ -28,6 +28,8 @@ module.exports = {
     contains: "test.urlContains()"
   },
 
+  CAPTURE: "pg.render('${name}.${ext}', {format: '${ext}', quality: '100'});\n",
+
   start: "test.start();\n",
   stop: "test.stop();\n",
   exit: "slimer.exit();\n",

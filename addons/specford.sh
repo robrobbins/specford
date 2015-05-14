@@ -4,7 +4,7 @@
 # Why? The feedback (logs) from the running script will be immediate as it
 # does not have to run inside a Node child_process
 #
-# Call with a sec name to run a single spec `specford foo` (no need for the extension)
+# Call with a spec name to run a single spec `specford foo` (no need for the extension)
 # Call with space separated names to run multiple `specford foo bar`
 # Call with no args to run all specs `specford`
 
@@ -15,7 +15,6 @@ function specford() {
 
 	# if we have any args, run them
 	if [ $len -gt 0 ]; then
-    echo "argments length: $len"
 	  for name in "$@"
 	  do
 	    slimerjs scripts/$name.js --ssl-protocol=any

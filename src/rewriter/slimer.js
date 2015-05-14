@@ -105,6 +105,12 @@ class Rewriter {
     }
   }
 
+  handleCapture(item) {
+    let str = grammar.CAPTURE;
+    let data = { name: item.tokens[2][1], ext: item.tokens[1][1]};
+    this.step.push(expand(str, data));
+  }
+
   // the default handler for cadence-of-3
   handleAssert(item) {
     let str = grammar[item.tokens[0][0]][item.tokens[2][1]];
@@ -132,6 +138,10 @@ class Rewriter {
 
         case 'AFTER':
           this.handleAfter(item);
+          break;
+
+        case 'CAPTURE':
+          this.handleCapture(item);
           break;
 
         case 'FILL':

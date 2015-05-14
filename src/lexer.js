@@ -1,6 +1,7 @@
 class Lexer {
   constructor() {
-    this.keywords = ['text', 'click', 'fill', 'after', 'url', 'selector'];
+    this.keywords = ['text', 'click', 'fill', 'after', 'url', 'selector',
+      'capture'];
 
     this.regexes = {
       comment: /^--\s*.*/,

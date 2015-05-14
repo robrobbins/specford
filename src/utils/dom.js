@@ -1,6 +1,8 @@
-var Dom = function() {};
+var Dom = function() {
 
-// Dom needs the currently opened page from the env 
+};
+
+// Dom needs the currently opened page from the env
 Dom.prototype.setPageRef = function(pg) { this.pg = pg; };
 
 Dom.prototype.getTextBySelector = function(selector) {
@@ -19,19 +21,24 @@ Dom.prototype.getSelectorBySelector = function(selector, ref) {
 Dom.prototype.clickSelector = function(selector, ref) {
   this.pg.evaluate((s, r) => {
     let el = document.querySelector(s).querySelector(r);
-    let ev = document.createEvent("MouseEvents");
-    ev.initMouseEvent('click', true, true, window, null, 0, 0, 0, 0, false,
-      false, false, false, 0, null);
-
-    return el && el.dispatchEvent(ev);
+    let ev = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
+    el && el.dispatchEvent(ev);
   }, selector, ref);
 };
 
-// TODO support filling multiple via querySelectorAll?
+// TODO deny filling disabled or readonly? Log message?
+// TODO when filling, fire input on each char?
 Dom.prototype.fillSelector = function(selector, ref, val) {
   this.pg.evaluate((s, r, v) => {
     let el = document.querySelector(s).querySelector(r);
-    if (el) el.value = v;
+    if (el) {
+      el.value = v;
+      // trigger an `input` event on appropriate types
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        let ev = new Event('input', { bubbles: true, cancelable: false });
+        el.dispatchEvent(ev);
+      }
+    }
   }, selector, ref, val);
 };
 

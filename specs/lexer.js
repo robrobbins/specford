@@ -113,6 +113,12 @@ describe('The Lexer', function() {
     expect(clik).toEqual([['CLICK', 'click'], ['SELECTOR', 'selector'], ['REFERENCE', '.foo']]);
   });
 
+  it('tokenizes capture', function() {
+    var cap = this.l.tokenize("capture jpeg 'foo'");
+
+    expect(cap).toEqual([['CAPTURE', 'capture'], ['IDENTIFIER', 'jpeg'], ['REFERENCE', 'foo']]);
+  });
+
   it('recognizes indent', function() {
     var i = this.l.tokenize('query foo:\n  selector');
     expect(i[0].indented).toBe(2);
