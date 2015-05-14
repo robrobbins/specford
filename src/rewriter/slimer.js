@@ -18,16 +18,31 @@ class Rewriter {
     this.code.push(
       generics.header,
       grammar.pgNull,
+      grammar.dom,
       grammar.tester,
       grammar.colorizer,
       grammar.logger
     );
   }
 
+  getElse() {
+    let obj = grammar.pgElse;
+    let ary = [
+      obj.create,
+      obj.ref,
+      obj.viewport,
+      obj.console,
+      obj.nav,
+      obj.error
+    ];
+    return expand(obj.wrapper, { body: ary.join('') });
+  }
+
   pushVisitBlock() {
+    // first assemble the lengthy pgElse block
     let ary = [
       grammar.pgIf,
-      grammar.pgElse,
+      this.getElse(),
       grammar.logOpening,
       grammar.pgOpen
     ];

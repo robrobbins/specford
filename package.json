@@ -19,6 +19,7 @@
     "through2": "*",
     "gulp-util": "*",
     "gulp-ext-replace": "*",
-    "gulp-jasmine": "*"
+    "gulp-jasmine": "*",
+    "glob": "*"
   }
 }

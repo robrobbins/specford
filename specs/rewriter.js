@@ -22,7 +22,7 @@ describe('The Rewriter', function() {
     it("starts the code block", function() {
       expect(this.r.code.length).toBeFalsy();
       this.r.startCodeBlock();
-      expect(this.r.code.length).toBe(5);
+      expect(this.r.code.length).toBe(6);
       //console.log(this.r.code);
     });
 

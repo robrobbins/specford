@@ -11,7 +11,7 @@ module.exports = {
   },
 
   CLICK: {
-    selector: "test.clickSelector('${selector}', '${ref}');\n"
+    selector: "dom.clickSelector('${selector}', '${ref}');\n"
   },
 
   AFTER: {
@@ -21,7 +21,7 @@ module.exports = {
   },
 
   FILL: {
-    selector: "test.fillSelector('${selector}', '${ref}', '${val}');\n"
+    selector: "dom.fillSelector('${selector}', '${ref}', '${val}');\n"
   },
 
   URL: {
@@ -31,12 +31,21 @@ module.exports = {
   start: "test.start();\n",
   stop: "test.stop();\n",
   exit: "slimer.exit();\n",
-  tester: "var Tester = require('../src/utils/tester');\nvar test = new Tester;\n",
+  dom: "var Dom = require('../src/utils/dom');\nvar dom = new Dom;\n",
+  tester: "var Tester = require('../src/utils/tester');\nvar test = new Tester(dom);\n",
   logger: "var Logger = require('../src/utils/logger');\nvar log = new Logger;\n",
   colorizer: "var colorizer = require('../src/utils/colorizer');\n",
   pgNull: "var pg = null;\n",
   pgIf: "if(pg) pg.close();\n",
-  pgElse: "else {\npg = require('webpage').create();\ntest.pg = pg;\npg.viewportSize = { width: 800, height: 600 };\npg.onConsoleMessage = function(msg) {log.unstamped(msg, 'magenta');};\npg.onNavigationRequested = function(url, type) {log.stamped(('navigating to: ' + url), 'gray');};\npg.onError = function(msg, tr) { var stack = ['ERROR: ' + msg]; if (tr && tr.length) { stack.push('TRACE:'); tr.forEach(function(t) { stack.push(' -> ' + t.file + ': ' + t.line + (t.function ? ' (in function *' + t.function +'*)' : '')); }); } log.unstamped(stack.join('\\n'), 'yellow'); };\n}\n",
+  pgElse: {
+    wrapper: "else {\n${body}}\n",
+    create: "pg = require('webpage').create();\n",
+    ref: "dom.setPageRef(pg);\n",
+    viewport: "pg.viewportSize = { width: 800, height: 600 };\n",
+    console: "pg.onConsoleMessage = function(msg) {log.unstamped(msg, 'magenta');};\n",
+    nav: "pg.onNavigationRequested = function(url, type) {log.stamped(('navigating to: ' + url), 'gray');};\n",
+    error: "pg.onError = function(msg, tr) { var stack = ['ERROR: ' + msg]; if (tr && tr.length) { stack.push('TRACE:'); tr.forEach(function(t) { stack.push(' -> ' + t.file + ': ' + t.line + (t.function ? ' (in function *' + t.function +'*)' : '')); }); } log.unstamped(stack.join('\\n'), 'yellow'); };\n"
+  },
   pgOpen: "pg.open(url, steps.shift());\n",
   logOpening: "log.pgOpening();\n",
   logOpened: "log.pgOpened();\n",
