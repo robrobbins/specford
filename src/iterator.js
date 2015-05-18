@@ -7,39 +7,41 @@
 class Iterator {
   constructor() {
     this.singles = ['VISIT', 'QUERY'];
+    this.quads = ['AFTER'];
   }
 
   initialize(tokens) {
     this.tokens = tokens;
+    this.qStack = [];
+    this.qLevels = {};
 
     // define an iterator to send out logical groups of lexer tokens
     // that map to a single 'step'
     this[Symbol.iterator] = function() {
-      // when yielding a step via next, send the current selector scope. This
-      // array should, at all times, reflect the accumulated `query`s
-      var qStack = [], qLevels = {}, singles = this.singles,
-        tokens = this.tokens;
-
       return {
         next: () => {
           let step = { tokens: null, selector: ''};
 
-          if (tokens.length) {
-            let t = tokens[0];
+          if (this.tokens.length) {
+            let t = this.tokens[0];
 
-            if (~singles.indexOf(t[0])) {
+            if (~this.singles.indexOf(t[0])) {
               // queryStack maintenence
               if (t[0] === 'QUERY') {
                 // prune all with indent >= t
-                if (qStack.length) qStack = qStack.filter(q => qLevels[q] < t.indented);
-                qStack.push(t[1]);
-                qLevels[t[1]] = t.indented;
+                if (this.qStack.length) {
+                  this.qStack = this.qStack.filter(q => this.qLevels[q] < t.indented);
+                }
+                this.qStack.push(t[1]);
+                this.qLevels[t[1]] = t.indented;
               }
-              step.tokens = [tokens.shift()];
-              return { value: step, done: false};
+              step.tokens = [this.tokens.shift()];
+              return { value: step, done: false };
             } else {
-              step.tokens = tokens.splice(0, 3);
-              step.selector = qStack.join(' ');
+              // `after` modifies the 3 step triplet
+              let n = (~this.quads.indexOf(t[0])) ? 4 : 3;
+              step.tokens = this.tokens.splice(0, n);
+              step.selector = this.qStack.join(' ');
               return { value: step, done: false};
             }
           } else return {value: undefined, done: true };

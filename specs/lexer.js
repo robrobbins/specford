@@ -41,9 +41,9 @@ describe('The Lexer', function() {
   });
 
   it("tokenizes after", function() {
-    var tokens = this.l.tokenize("after url change");
+    var tokens = this.l.tokenize("after url contains '#foo'");
 
-    expect(tokens).toEqual([['AFTER', 'after'], ['URL', 'url'], ['IDENTIFIER', 'change']]);
+    expect(tokens).toEqual([['AFTER', 'after'], ['URL', 'url'], ['IDENTIFIER', 'contains'], ['REFERENCE', '#foo']]);
   });
 
   it('tokenizes numbers', function() {

@@ -14,18 +14,13 @@ module.exports = {
     selector: "dom.clickSelector('${selector}', '${ref}');\n"
   },
 
-  AFTER: {
-    url: {
-      change: "pg.onUrlChanged = steps.shift();\n"
-    }
-  },
-
   FILL: {
     selector: "dom.fillSelector('${selector}', '${ref}', '${val}');\n"
   },
 
   URL: {
-    contains: "test.urlContains()"
+    contains: "test.urlContains('${ref}')",
+    matches: "test.urlMatches('${ref}')"
   },
 
   CAPTURE: "pg.render('${name}.${ext}', {format: '${ext}', quality: '100'});\n",

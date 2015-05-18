@@ -8,13 +8,17 @@ var Tester = function(dom) {
   this.dom = dom;
 
   this.failures = [];
+  this.actuals = [];
   this.passes = 0;
 
-  // failure messages for interpolation
-  this.doesntHaveText = '${selector} does not contain text "${ref}"';
-  this.doesntHaveSelector = '${selector} does not contain selector "${ref}"';
-  this.hasText = '${selector} contains text "${ref}"';
-  this.hasSelector = '${selector} contains selector "${ref}"';
+  // failure messages for interpolation, TODO abstract
+  this.noActual = " - ";
+  this.doesntHaveText = '"${selector}" does not contain text "${ref}"';
+  this.doesntHaveSelector = '"${selector}" does not contain selector "${ref}"';
+  this.hasText = '"${selector}" contains text "${ref}"';
+  this.hasSelector = '"${selector}" contains selector "${ref}"';
+  this.urlDoesntContain = 'URL does not contain "${ref}"';
+  this.urlDoesntMatch = 'URL does not match "${ref}"';
 };
 
 Tester.prototype.total = function() {
@@ -29,7 +33,7 @@ Tester.prototype.stop = function() {
   this.stopped = new Date().getTime();
   this.elapsed = this.stopped - this.started;
 
-  reporter.summarize(this.elapsed, this.total(), this.failures);
+  reporter.summarize(this.elapsed, this.total(), this.failures, this.actuals);
 };
 
 Tester.prototype.result = function(data) {
@@ -39,8 +43,17 @@ Tester.prototype.result = function(data) {
   } else {
     var txt = this.failed(data);
     this.failures.push(txt);
+    // in order for the matrix to line-up push a placeholder of falsy
+    this.pushActual(data);
     reporter.failed();
   }
+};
+
+// We need to see what was actually returned from the page thread in a fail
+Tester.prototype.pushActual = function(data) {
+  // at this point actual should be a string
+  data.actual || (data.actual = this.noActual);
+  this.actuals.push(expand('actual: ${actual}', data))
 };
 
 Tester.prototype.failed = function(data) {
@@ -53,7 +66,8 @@ Tester.prototype.textExists = function(selector, ref) {
     bool: text.match(ref),
     selector: selector,
     ref: ref,
-    onFail: 'doesntHaveText'
+    onFail: 'doesntHaveText',
+    actual: text
   };
   return this.result(data);
 };
@@ -76,7 +90,8 @@ Tester.prototype.textDoesNotExist = function(selector, ref) {
     bool: !text.match(ref),
     selector: selector,
     ref: ref,
-    onFail: 'hasText'
+    onFail: 'hasText',
+    actual: text
   };
   return this.result(data);
 };
@@ -88,6 +103,28 @@ Tester.prototype.selectorDoesNotExist = function(selector, ref) {
     selector: selector,
     ref: ref,
     onFail: 'hasSelector'
+  };
+  return this.result(data);
+};
+
+Tester.prototype.urlContains = function(ref) {
+  var url = this.dom.getUrl();
+  var data = {
+    bool: url.match(ref),
+    ref: ref,
+    onFail: 'urlDoesntContain',
+    actual: url
+  };
+  return this.result(data);
+};
+
+Tester.prototype.urlMatches = function(ref) {
+  var url = this.dom.getUrl();
+  var data = {
+    bool: url === ref,
+    ref: ref,
+    onFail: 'urlDoesntMatch',
+    actual: url
   };
   return this.result(data);
 };

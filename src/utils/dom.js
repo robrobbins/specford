@@ -13,9 +13,17 @@ Dom.prototype.getTextBySelector = function(selector) {
 
 Dom.prototype.getSelectorBySelector = function(selector, ref) {
   return this.pg.evaluate((s, r) => {
+    // if no top level selector has been made default to `body`
+    s || (s = 'body');
     let el = document.querySelector(s);
     return el && el.querySelector(r);
   }, selector, ref);
+};
+
+Dom.prototype.getUrl = function() {
+  return this.pg.evaluate(() => {
+    return this.pg.url;
+  });
 };
 
 Dom.prototype.clickSelector = function(selector, ref) {

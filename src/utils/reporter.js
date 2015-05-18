@@ -15,7 +15,7 @@ Reporter.prototype.failed = function() {
   log.write('f', 'redBold');
 };
 
-Reporter.prototype.summarize = function(elapsed, total, failures) {
+Reporter.prototype.summarize = function(elapsed, total, failures, actuals) {
   elapsed = Math.floor(elapsed / 100) / 10;
 
   let info = expand(this.finished, { total: total, elapsed: elapsed });
@@ -25,8 +25,9 @@ Reporter.prototype.summarize = function(elapsed, total, failures) {
 
   if (failures.length) {
     log.unstamped(failed, 'red');
-    failures.forEach(function(fail) {
+    failures.forEach(function(fail, i) {
       log.unstamped(fail, 'yellow');
+      log.unstamped(actuals[i], 'gray');
     });
   }
 };
