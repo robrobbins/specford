@@ -22,7 +22,7 @@ Dom.prototype.getSelectorBySelector = function(selector, ref) {
 
 Dom.prototype.getUrl = function() {
   return this.pg.evaluate(() => {
-    return this.pg.url;
+    return window.location.href;
   });
 };
 

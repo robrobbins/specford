@@ -1,4 +1,3 @@
-var generics = require('../grammar/generics');
 var grammar = require('../grammar/slimer');
 var expand = require('../utils/util').expand;
 
@@ -10,13 +9,16 @@ class Rewriter {
     this.code = [];
     this.steps = [];
     this.step = [];
+    // when a step is ready to be moved, it must be wrapped...
     this.stepWrapper = 'openWrapper';
+    // visits after the first are just steps...
     this.visits = 0;
+    //
   }
 
   startCodeBlock() {
     this.code.push(
-      generics.header,
+      grammar.header,
       grammar.pgNull,
       grammar.dom,
       grammar.tester,
@@ -68,6 +70,43 @@ class Rewriter {
     this.step = [];
   }
 
+  // inspect the token and call the appropriate method(s)
+  handleItem(item) {
+    switch (item.tokens[0][0]) {
+      case 'VISIT':
+        this.handleVisit(item.tokens[0][1]);
+        break;
+
+      // queries do nothing here
+      case 'QUERY':
+        let pass;
+        break;
+
+      case 'AFTER':
+        let isUrl = item.tokens[1][0] === 'URL';
+        this.handleAfter(item, isUrl);
+        break;
+
+      case 'CAPTURE':
+        this.handleCapture(item);
+        break;
+
+      case 'CLICK':
+        this.handleCommand(item);
+        break;
+
+      case 'FILL':
+        this.handleCommand(item, true);
+        break;
+
+      // observations are the default
+      default:
+        let isUrl = item.tokens[0][0] === 'URL';
+        this.handleObservation(item, isUrl);
+        break;
+    }
+  }
+
   handleVisit(url) {
     // if step is present move it to steps
     if (this.visits > 0) {
@@ -79,30 +118,32 @@ class Rewriter {
     }
   }
 
-  handleClick(item) {
-    let str = grammar.CLICK[item.tokens[1][1]];
-    let data = { selector: item.selector, ref: item.tokens[2][1] };
-    this.step.push(expand(str, data));
-  }
-
-  handleFill(item) {
-    // the cadence technically is FILL/ref/ref with the 1th ref being a sel
-    let str = grammar.FILL.selector;
-    let data = { selector: item.selector, ref: item.tokens[1][1], val: item.tokens[2][1] };
-    this.step.push(expand(str, data));
-  }
-
-  handleAfter(item) {
-    if (item.tokens[1][0] === 'URL') {
-      // we assume the listener needs to go next-to-last in the current step
-      let str = grammar.AFTER.url.change;
-      var last = this.step.pop();
-      this.step.push(str, last);
-      // the current step is now done
-      this.moveStep();
-      // the next steps will be wrapped in a 'urlChange'
-      this.stepWrapper = 'urlChangeWrapper';
+  // test.after(steps.shift(), method, one, two)
+  // one: selector or ref
+  // two: ref
+  handleAfter(item, isUrl) {
+    // shift off the after token, leaving a triplet
+    item.tokens.shift();
+    let str = grammar.AFTER;
+    let data = {};
+    // an after call can only happen on observations, of which URL varies
+    if (isUrl) {
+      data.meth = grammar[item.tokens[0][0]][item.tokens[1][1]].after;
+      // url has no selector
+      data.one = item.tokens[2][1];
+      data.two = undefined;
     }
+    // or, a base observation
+    else {
+      data.meth = grammar[item.tokens[0][0]][item.tokens[2][1]].after;
+      data.one = item.selector;
+      data.two = item.tokens[1][1];
+    }
+    this.step.push(expand(str, data));
+    // the current step is done
+    this.moveStep();
+    // the next steps will be wrapped in a generic fn
+    this.stepWrapper = 'genericWrapper';
   }
 
   handleCapture(item) {
@@ -111,10 +152,37 @@ class Rewriter {
     this.step.push(expand(str, data));
   }
 
-  // the default handler for cadence-of-3
-  handleAssert(item) {
-    let str = grammar[item.tokens[0][0]][item.tokens[2][1]];
-    let data = { selector: item.selector, ref: item.tokens[1][1] };
+  handleUrl(item) {
+    let str = grammar.URL[item.tokens[1][1]].now;
+    let data = { ref: item.tokens[2][1] };
+    this.step.push(expand(str, data));
+  }
+
+  handleCommand(item, isFill) {
+    // commands have no after case
+    let str = grammar[item.tokens[0][0]];
+    let data = { selector: item.selector };
+    // fill commands are FILL/ref/ref with the 1th ref being a sel, the last a val
+    if (isFill) {
+      data.ref = item.tokens[1][1];
+      data.val = item.tokens[2][1];
+      // non-fill command has no val
+    } else data.ref = item.tokens[2][1];
+
+    this.step.push(expand(str, data));
+  }
+
+  handleObservation(item, isUrl) {
+    let data = { selector: item.selector };
+    let str;
+    // all observations have immediate + after use-case
+    if (isUrl) {
+      str = grammar[item.tokens[0][0]][item.tokens[1][1]].now;
+      data.ref = item.tokens[2][1];
+    } else {
+      str = grammar[item.tokens[0][0]][item.tokens[2][1]].now;
+      data.ref = item.tokens[1][1];
+    }
     this.step.push(expand(str, data));
   }
 
@@ -122,37 +190,7 @@ class Rewriter {
     this.startCodeBlock();
 
     for (let item of iterator) {
-      switch (item.tokens[0][0]) {
-        case 'VISIT':
-          this.handleVisit(item.tokens[0][1]);
-          break;
-
-        // queries do nothing here
-        case 'QUERY':
-          let pass;
-          break;
-
-        case 'CLICK':
-          this.handleClick(item);
-          break;
-
-        case 'AFTER':
-          this.handleAfter(item);
-          break;
-
-        case 'CAPTURE':
-          this.handleCapture(item);
-          break;
-
-        case 'FILL':
-          this.handleFill(item);
-          break;
-
-        // default is our 3-command triplet where assert is last
-        default:
-          this.handleAssert(item);
-          break;
-      }
+      this.handleItem(item);
     }
 
     // each token set inspected, close the last step

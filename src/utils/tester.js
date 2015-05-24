@@ -37,23 +37,59 @@ Tester.prototype.stop = function() {
 };
 
 Tester.prototype.result = function(data) {
+
   if (data.bool) {
     this.passes++;
     reporter.passed();
+    return true;
   } else {
-    var txt = this.failed(data);
-    this.failures.push(txt);
-    // in order for the matrix to line-up push a placeholder of falsy
-    this.pushActual(data);
-    reporter.failed();
+    // if in an after loop dont log the fails until timeout reached
+    if (!this.waiting) {
+      var txt = this.failed(data);
+      this.failures.push(txt);
+      this.pushActual(data);
+      reporter.failed();
+    }
+    return false;
   }
+};
+
+Tester.prototype.after = function (next, test, ...testArgs) {
+  // default timeout is 3s
+  var tOut = 3000;
+  var start = new Date().getTime();
+  // condition to be met before proceeding
+  var bool = false;
+  var interval;
+
+  interval = setInterval(function() {
+    if ((new Date().getTime() - start < tOut) && !bool) {
+      // flag the tests not to report while waiting
+      this.waiting = true;
+      // log that we are waiting
+      reporter.waiting();
+      // test in a method on this object...
+      bool = this[test].apply(this, testArgs);
+    } else {
+      if (!bool) {
+        // timeout or condition unmet
+        reporter.afterFailed();
+        delete this.waiting;
+        // allow the fail to report
+        this[test].apply(this, testArgs);
+      }
+      // the test must go on...
+      clearInterval(interval);
+      next();
+    }
+  }.bind(this), 250);
 };
 
 // We need to see what was actually returned from the page thread in a fail
 Tester.prototype.pushActual = function(data) {
   // at this point actual should be a string
   data.actual || (data.actual = this.noActual);
-  this.actuals.push(expand('actual: ${actual}', data))
+  this.actuals.push(expand('actual: ${actual}', data));
 };
 
 Tester.prototype.failed = function(data) {
@@ -61,8 +97,8 @@ Tester.prototype.failed = function(data) {
 };
 
 Tester.prototype.textExists = function(selector, ref) {
-  var text = this.dom.getTextBySelector(selector);
-  var data = {
+  let text = this.dom.getTextBySelector(selector);
+  let data = {
     bool: text.match(ref),
     selector: selector,
     ref: ref,
@@ -73,8 +109,8 @@ Tester.prototype.textExists = function(selector, ref) {
 };
 
 Tester.prototype.selectorExists = function(selector, ref) {
-  var el = this.dom.getSelectorBySelector(selector, ref);
-  var data = {
+  let el = this.dom.getSelectorBySelector(selector, ref);
+  let data = {
     bool: !!el,
     selector: selector,
     ref: ref,
@@ -85,8 +121,8 @@ Tester.prototype.selectorExists = function(selector, ref) {
 
 
 Tester.prototype.textDoesNotExist = function(selector, ref) {
-  var text = this.dom.getTextBySelector(selector);
-  var data = {
+  let text = this.dom.getTextBySelector(selector);
+  let data = {
     bool: !text.match(ref),
     selector: selector,
     ref: ref,
@@ -97,8 +133,8 @@ Tester.prototype.textDoesNotExist = function(selector, ref) {
 };
 
 Tester.prototype.selectorDoesNotExist = function(selector, ref) {
-  var el = this.dom.getSelectorBySelector(selector, ref);
-  var data = {
+  let el = this.dom.getSelectorBySelector(selector, ref);
+  let data = {
     bool: !el,
     selector: selector,
     ref: ref,
@@ -108,8 +144,8 @@ Tester.prototype.selectorDoesNotExist = function(selector, ref) {
 };
 
 Tester.prototype.urlContains = function(ref) {
-  var url = this.dom.getUrl();
-  var data = {
+  let url = this.dom.getUrl();
+  let data = {
     bool: url.match(ref),
     ref: ref,
     onFail: 'urlDoesntContain',
@@ -119,8 +155,8 @@ Tester.prototype.urlContains = function(ref) {
 };
 
 Tester.prototype.urlMatches = function(ref) {
-  var url = this.dom.getUrl();
-  var data = {
+  let url = this.dom.getUrl();
+  let data = {
     bool: url === ref,
     ref: ref,
     onFail: 'urlDoesntMatch',
