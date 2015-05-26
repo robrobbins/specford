@@ -1,137 +1,125 @@
 #Specford
-_put this in your spec and smoke it_
+_integration bot from the future_
 
-##.spec files
-You tell Specford what to do via '.spec' files. Those .spec files are made up of
-commands that are all **very minimal statements**. Before going into the '.spec' language, let's
-look at a small example:
+##.spec files and The Rule of 3
+You tell Specford what to do via `.spec` files. Those files are syntactically minimalistic, made up of only 2 things: **Commands** and **Observations**. Each adhering, in some way, to the _rule of three_. Before going deeper into the `.spec` language, let's look at a small example:
 
     visit http://google.com:
-      query body:
-        text 'About Google' exists
-        text 'Foo bar baz' doesNotExist
+    query body:
+      text 'About' exists
+      text 'Foo bar baz' doesNotExist
 
 Specford reads this as:
 
 + Go to google.com
-+ Query the document you find there for 'body', set that as the context
-+ Check if the text 'About Google' exists (in the current context).
++ Query the document for 'body', set that as the context
++ Check if the text 'About' exists (in the current context).
 + Check if the text 'Foo bar baz' does not exist (also in the context).
 
-Other examples are in the 'specs' directory for your exampling pleasure. Without further
-ado, I present the statements available to you in a '.spec' file.
-
-###Visit and Query
+###Commands
+Statements in which Specford does stuff that has side effects. 
 
 ####Visit
+Before Specford can operate on a page, you need to send him to one.
 
-All '.spec' files **must** begin with a `visit` statement in the form:
+    visit www.foo.com/bar:
 
-    visit http://www.foo.com/bar:
+The syntax breakdown reveals 3 things:
 
-The syntax is basically:
+    <visit keyword> <some/url> <colon>
 
-    <visit keyword> <someURL> <colon>
-
-It can be any viable URL. Notice the colon at the end,  both `visit` and  `query` statements
-terminate with colons. All further statements are indented at least one level from the
-visit. There can be one `visit` per spec, or multiple `visit` commands (just be sure to reset the indentation
-level when starting another 'visit').
+Notice the colon at the end. `visit`, and the yet-to-be-mentioned `query`, both terminate with a colon. What's `query`? Segue!
 
 ####Query
+A `query` is used to set the context for a series of **Commands** and **Observations**.
 
-The second command in a `.spec` file **must be a query**. If you want to act on the entire page
-then `query` the **document body**.
+    query div.foo:
 
-A `query` is performed with the `query` operator and is used to set the context for a series
-of statements. Along with the `visit` command `query` begins an indent block. Queries stack,
-and un-stack By indent, so whitespace matters. For example:
+That syntax breakdown; still 3 parts:
 
-    query #foo:
-      selector 'h1' exists
+    <query keyword> <css-selector> <colon>
 
-      query .bar:
-        selector 'a.baz' exists
+The *css-selector* portion of the command is any valid CSS. If it would work with `querySelector` it will work here.
 
-The first `selector` command looks for an **h1** tag in the element with **id='foo'**, while the second
-`selector` command looks for the **anchor tag class='baz' inside a match to the selector '#foo .bar'**.
+#####Indenting, Stacking, Scoping
+Unique to the `query` _Command_ is the fact that its indent level is tracked. This allows _queries_ to be stacked (and unstacked), combining to form the _current context_, via whitespace.
 
-### Existential Operations
+    query .main-content:
+      query h1:
 
-The `exists` and `doesNotExist` **assertions** are the key to testing if something exists (or does not).
+This forms the _context_ `main-content h1`, scoping any **Commands** or **Observations** to those Elements that this would apply. Larger indents stack, equal levels replace, and smaller unstack:
 
-####Selector
+    query .container:
+      query #foo:
+        -- current context is ".container #foo"
+        query span:
+          -- current context is".container #foo span"
+      query #bar:
+        -- current context is ".container #bar"
+    query footer:
+      -- current context is "footer"
 
-Confirming if an element exists (or doesn`t) is done using the `selector` statement. Typical for **.spec** commands it
-is in 3 parts: **operator reference assertion** (in most cases, some are reversed):
+####Click
+Instruct Specford to click something:
 
-    selector 'div#foo' exists
+    click selector 'input.btn-primary'
+    
+The three parts here can be defined as:
 
-Also you could do:
+    <click keyword> <selector keyword> <css-selector reference>
+    
+#####References
+Notice the CSS selector in the above _click command_ is in **single quotes**. This is what we call a **Reference**.
+A **Reference** is any series of characters that may, or may not, at some point, contain whitespace.
 
-    selector 'span.bar' doesNotExist
+* Values for the `fill` Command
+* Text to be verified via the `text` Observation
+* CSS selectors not in a Query Command
 
-#####A Note On The Reference Component
+A Reference must be wrapped in single quotes, **not double**. You may use double quotes inside of a Reference however:
 
-The second piece of the `seletor` existential command is the `reference`. **It must be in single quotes**. Double quotes may follow, and often will be nested within, but the outer most quotes must be single. Specford knows to handle references differently, as they are not part of the `.spec` language. You could think of them as _strings_. The 'reference' to a 'selector' command **can be any legal css selector**.
+    click selector 'a[href="foo/bar"]'
+    
+_Remember that the Visit and Query Commands do not utilize References. They do not require the use of quotation marks_
 
-####Text
+#####Keywords
+These are syntax components that are not References, but combine with them to make up the Commands and Observations
+of the `.spec` language.
 
-Tries to match the `reference` against the **current context**'s **textContent**. The **current context** being whatever has been set through a previous `query` operation. In the form `text <reference> <assertion>`.
+####Fill
+Insert values into an input field:
 
-###Clicking Things
+    fill 'input.foo-bar' 'bazzy baz'
+   
+Notice the use of two References here:
 
-Click events performed by Specford are dispatched to a `selector` via another 3-part command:
+    <fill keyword> <css-selector reference> <value reference>
+    
+The first Reference is the field, the second is the value to be inserted.
 
-    click selector '#btn.primary'
+###Observations
+Tests that Specford performs, scoped to the _current context_.
 
-Or:
+####exists, doesNotExist
+Is a given _Reference_ on (or not on) the page? This "existential" Observation can be made on:
 
-    click link 'a.foo'
+    // Text:
+      
+    text 'foo bar' exists
+    
+    // Element(s) via a CSS selector: 
+    
+    selector '.popup-foo' doesNotExist
 
-Or:
+Remember that these observations apply to only the _context_ you have set via Query.
 
-    click submit 'button.submit'
+####Url Observation
+There are two observations specific to the page URL, `contains` and `matches`:
 
-Both examples begin with the `click` keyword and end with a reference (again any legal css selector) but vary in the middle.
-Specford understands the differences between selectors, links, and submitting a form. You, the developer, don't need to be cognizant of this.
-Just write your spec... Obviously, there could be overlap with these commands. You could use `click selector ...` for all of these,
-but by being explicit in your spec language, pertaining to **what** you are clicking, produces superior readability.
-
-Notice that the syntax of the `click` operator has the `reference` component at the end.
-
-###Filling Inputs
-
-The `fill` command has another slight variant in its syntax, it takes 2 references:
-
-    fill 'input.foo' 'bar baz'
-
-This would find the **input class='foo' in the current context** and fill it with the **value** 'bar baz'. The second command
-after the `fill` operator is the **selector** and the third is the **value**.
-
-####Fill And Fixtures
-
-Specford utilizes **fixtures** in the form of an **Object Literal**. The `fill` command understands this and
-checks to see if the **value** 'reference' (the third piece) of a `fill` statement matches a key (or 'key path') in
-the loaded fixture Object. If so, the **value** located at that key (or 'path') is used as the `fill` value. A **key** is
-simply a top level entry in your **fixtures** object, and a path is a key contained in a nested object of the **fixtures**.
-For example, if this were the content of the `all.js` fixture:
-
-    {
-      foo: 'bar'
-      baz: {
-        qux: 'vop'
-      }
-    }
-
-You could use the value located at **foo** in a spec by simply putting that **key** as the **value** in a `fill` command.
-
-    fill 'input.bar' 'foo'
-
-A **path** is a dot-delimited string that leads to a value in an object, so to use the value at **qux**:
-
-    fill 'input.foo' 'baz.qux'
-
-###Waiting For *
-
-and more coming soon...
+    // does any part of the current URL "contain" a reference
+    
+    url contains 'foo'
+    
+    // does the entire URL match the Reference exactly
+    
+    url matches 'https://www.my-site.com/foo'
