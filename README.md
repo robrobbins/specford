@@ -17,7 +17,7 @@ Specford reads this as:
 + Check if the text 'Foo bar baz' does not exist (also in the context).
 
 ###Commands
-Statements in which Specford does stuff that has side effects. 
+Statements in which Specford does stuff that has side effects.
 
 ####Visit
 Before Specford can operate on a page, you need to send him to one.
@@ -63,11 +63,11 @@ This forms the _context_ `main-content h1`, scoping any **Commands** or **Observ
 Instruct Specford to click something:
 
     click selector 'input.btn-primary'
-    
+
 The three parts here can be defined as:
 
     <click keyword> <selector keyword> <css-selector reference>
-    
+
 #####References
 Notice the CSS selector in the above _click command_ is in **single quotes**. This is what we call a **Reference**.
 A **Reference** is any series of characters that may, or may not, at some point, contain whitespace.
@@ -79,7 +79,7 @@ A **Reference** is any series of characters that may, or may not, at some point,
 A Reference must be wrapped in single quotes, **not double**. You may use double quotes inside of a Reference however:
 
     click selector 'a[href="foo/bar"]'
-    
+
 _Remember that the Visit and Query Commands do not utilize References. They do not require the use of quotation marks_
 
 #####Keywords
@@ -90,12 +90,23 @@ of the `.spec` language.
 Insert values into an input field:
 
     fill 'input.foo-bar' 'bazzy baz'
-   
+
 Notice the use of two References here:
 
     <fill keyword> <css-selector reference> <value reference>
-    
+
 The first Reference is the field, the second is the value to be inserted.
+
+####Screenshots
+Use the `capture` _Command_ to get a screenshot. It will save in the Specford root directory.
+
+    capture jpeg 'screenshot'
+
+    // <capture keyword> <jpg | jpeg | png> <name reference>
+
+The second piece of the command is obviously an option for image type. You can use `jpeg`, `jpg`, or `png`.
+Notice that this part is not a _Reference_ and does not need to be in quotations (as whitespace is never an option here).
+Last is a _Reference_, so *do* use single quotes there.
 
 ###Observations
 Tests that Specford performs, scoped to the _current context_.
@@ -104,11 +115,11 @@ Tests that Specford performs, scoped to the _current context_.
 Is a given _Reference_ on (or not on) the page? This "existential" Observation can be made on:
 
     // Text:
-      
+
     text 'foo bar' exists
-    
-    // Element(s) via a CSS selector: 
-    
+
+    // Element(s) via a CSS selector:
+
     selector '.popup-foo' doesNotExist
 
 Remember that these observations apply to only the _context_ you have set via Query.
@@ -117,9 +128,9 @@ Remember that these observations apply to only the _context_ you have set via Qu
 There are two observations specific to the page URL, `contains` and `matches`:
 
     // does any part of the current URL "contain" a reference
-    
+
     url contains 'foo'
-    
+
     // does the entire URL match the Reference exactly
-    
+
     url matches 'https://www.my-site.com/foo'
