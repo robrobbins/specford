@@ -98,8 +98,8 @@ class Lexer {
         num = num.slice(1);
       // if its not an actual quantifier, clear it
       } else q = '';
-
-      this.pushToken('NUMBER', parseInt(num, 10));
+      // it will be a string throughout...
+      this.pushToken('NUMBER', num);
       // append the attr the same way that whitespace is, this means that a
       // number token can be expected to have a quantifier
       t = this.tokens[this.tokens.length - 1];

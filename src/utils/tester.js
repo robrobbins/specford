@@ -19,6 +19,7 @@ var Tester = function(dom) {
   this.hasSelector = '"${selector}" contains selector "${ref}"';
   this.urlDoesntContain = 'URL does not contain "${ref}"';
   this.urlDoesntMatch = 'URL does not match "${ref}"';
+  this.countIsNot = 'Count of ${selector} ${ref} is not ${q} ${subject}';
 };
 
 Tester.prototype.total = function() {
@@ -163,6 +164,24 @@ Tester.prototype.urlMatches = function(ref) {
     actual: url
   };
   return this.result(data);
+};
+
+Tester.prototype.countExists = function (selector, ref, num, q) {
+  // getSelectors... returns NodeList via querySelectorAll
+  let list = this.dom.getSelectorsBySelector(selector, ref);
+  let len = list.length;
+  // normalize the bool, q may be present (or not)
+  let bool = q ? ( q === '>' ? len > num : len < num ) : len === num;
+
+  let data = {
+    bool: bool,
+    selector: selector,
+    ref: ref,
+    num: num,
+    q: q,
+    onFail: 'countIsNot',
+    actual: len
+  };
 };
 
 module.exports = Tester;

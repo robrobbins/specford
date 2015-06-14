@@ -48,7 +48,7 @@ describe('The Lexer', function() {
 
   it('tokenizes numbers', function() {
     var tokens = this.l.tokenize('20');
-    var inner = ['NUMBER', 20];
+    var inner = ['NUMBER', '20'];
     inner.quantifier = '';
     var outer = [inner];
 
@@ -57,7 +57,7 @@ describe('The Lexer', function() {
 
   it('tokenizes lt number expression', function() {
     var tokens = this.l.tokenize('<10');
-    var inner = ['NUMBER', 10];
+    var inner = ['NUMBER', '10'];
     inner.quantifier = '<';
     var outer = [inner];
 
@@ -67,7 +67,7 @@ describe('The Lexer', function() {
 
   it('tokenizes gt number expression', function() {
     var tokens = this.l.tokenize('>1');
-    var inner = ['NUMBER', 1];
+    var inner = ['NUMBER', '1'];
     inner.quantifier = '>';
     var outer = [inner];
 
@@ -83,7 +83,7 @@ describe('The Lexer', function() {
 
   it('tokenizes exist', function() {
     var exist = this.l.tokenize(">5 '.foo' exist");
-    var inner = ['NUMBER', 5];
+    var inner = ['NUMBER', '5'];
     inner.quantifier = '>';
     var outer = [inner];
 
@@ -104,7 +104,7 @@ describe('The Lexer', function() {
 
   it('tokenizes !exist', function() {
     var nexists = this.l.tokenize("5 '.foo' doNotExist");
-    var inner = ['NUMBER', 5];
+    var inner = ['NUMBER', '5'];
     inner.quantifier = '';
 
     expect(nexists).toEqual([inner, ['REFERENCE', '.foo'], ['ASSERT', 'doNotExist']]);

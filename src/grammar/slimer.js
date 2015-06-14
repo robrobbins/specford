@@ -23,7 +23,7 @@ module.exports = {
 
   NUMBER: {
     exist: {
-      now: "test.countExists('${selector}', '${ref}', ${num}, '${q}')",
+      now: "test.countExists('${selector}', '${ref}', ${subject}, '${q}')",
       after: "test.countExists"
     }
   },
@@ -43,8 +43,8 @@ module.exports = {
 
   FILL: "dom.fillSelector('${selector}', '${ref}', '${val}');\n",
 
-  // AFTER: "test.after.apply(test, ${args});\n",
-  AFTER: "test.after(steps.shift(), '${meth}', '${one}', '${two}');\n",
+  // AFTER: "test.after.apply(test, ${args});\n" -- never more than 4 allowed
+  AFTER: "test.after(steps.shift(), '${meth}', '${one}', '${two}', '${three}', '${four}');\n",
 
   CAPTURE: "pg.render('${name}.${ext}', {format: '${ext}', quality: '100'});\n",
 
