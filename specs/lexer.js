@@ -47,15 +47,47 @@ describe('The Lexer', function() {
   });
 
   it('tokenizes numbers', function() {
-    var tokens = this.l.tokenize('2015');
+    var tokens = this.l.tokenize('20');
+    var inner = ['NUMBER', '20'];
+    inner.quantifier = '';
+    var outer = [inner];
 
-    expect(tokens).toEqual([['NUMBER', 2015]]);
+    expect(tokens).toEqual(outer);
+  });
+
+  it('tokenizes lt number expression', function() {
+    var tokens = this.l.tokenize('<10');
+    var inner = ['NUMBER', '10'];
+    inner.quantifier = '<';
+    var outer = [inner];
+
+    expect(tokens).toEqual(outer);
+    expect(tokens[0].quantifier).toBe('<');
+  });
+
+  it('tokenizes gt number expression', function() {
+    var tokens = this.l.tokenize('>1');
+    var inner = ['NUMBER', '1'];
+    inner.quantifier = '>';
+    var outer = [inner];
+
+    expect(tokens).toEqual(outer);
+    expect(tokens[0].quantifier).toBe('>');
   });
 
   it('tokenizes exists', function() {
     var exists = this.l.tokenize("'foo' exists");
 
     expect(exists).toEqual([['REFERENCE', 'foo'], ['ASSERT', 'exists']]);
+  });
+
+  it('tokenizes exist', function() {
+    var exist = this.l.tokenize(">5 '.foo' exist");
+    var inner = ['NUMBER', '5'];
+    inner.quantifier = '>';
+    var outer = [inner];
+
+    expect(exist).toEqual([inner, ['REFERENCE', '.foo'], ['ASSERT', 'exist']]);
   });
 
   it('tokenizes selector', function() {
@@ -70,34 +102,17 @@ describe('The Lexer', function() {
     expect(nexists).toEqual([['REFERENCE', 'foo'], ['ASSERT', 'doesNotExist']]);
   });
 
-  it('tokenizes equals', function() {
-    var eq = this.l.tokenize("'foo' equals 'bar'");
-
-    expect(eq).toEqual([['REFERENCE', 'foo'], ['ASSERT', 'equals'], ['REFERENCE', 'bar']]);
+  it('tokenizes !exist', function() {
+    var nexists = this.l.tokenize("5 '.foo' doNotExist");
+    var inner = ['NUMBER', '5'];
+    inner.quantifier = '';
+    expect(nexists).toEqual([inner, ['REFERENCE', '.foo'], ['ASSERT', 'doNotExist']]);
   });
 
   it("tokenizes fill cadence", function() {
     var fill = this.l.tokenize("fill '.foo' 'bar'");
 
     expect(fill).toEqual([['FILL', 'fill'], ['REFERENCE', '.foo'], ['REFERENCE', 'bar']]);
-  });
-
-  it('tokenizes !equals', function() {
-    var neq = this.l.tokenize("'foo' doesNotEqual 'bar'");
-
-    expect(neq).toEqual([['REFERENCE', 'foo'], ['ASSERT', 'doesNotEqual'], ['REFERENCE', 'bar']]);
-  });
-
-  it('tokenizes isVisible', function() {
-    var viz = this.l.tokenize("'foo' isVisible");
-
-    expect(viz).toEqual([['REFERENCE', 'foo'], ['ASSERT', 'isVisible']]);
-  });
-
-  it('tokenizes isNotVisible', function() {
-    var nviz = this.l.tokenize("'foo' isNotVisible");
-
-    expect(nviz).toEqual([['REFERENCE', 'foo'], ['ASSERT', 'isNotVisible']]);
   });
 
   it('recognizes text', function() {

@@ -16,8 +16,26 @@ module.exports = {
       now: "test.selectorExists('${selector}', '${ref}');\n"
     },
     doesNotExist: {
-      now: "test.selectorDoesNotExist('${selector}', '${ref}');\n",
-      after: "selectorDoesNotExist"
+      after: "selectorDoesNotExist",
+      now: "test.selectorDoesNotExist('${selector}', '${ref}');\n"
+    }
+  },
+
+  NUMBER: {
+    exist: {
+      now: "test.countExists('${selector}', '${ref}', ${subject}, '${q}');\n",
+      after: "test.countExists"
+    }
+  },
+
+  URL: {
+    contains: {
+      after: "urlContains",
+      now: "test.urlContains('${ref}');\n"
+    },
+    matches: {
+      after: "urlMatches",
+      now: "test.urlMatches('${ref}');\n"
     }
   },
 
@@ -25,19 +43,8 @@ module.exports = {
 
   FILL: "dom.fillSelector('${selector}', '${ref}', '${val}');\n",
 
-  URL: {
-    contains: {
-      now: "test.urlContains('${ref}');\n",
-      after: "urlContains"
-    },
-    matches: {
-      now: "test.urlMatches('${ref}');\n",
-      after: "urlMatches"
-    }
-  },
-
-  // AFTER: "test.after.apply(test, ${args});\n",
-  AFTER: "test.after(steps.shift(), '${meth}', '${one}', '${two}');\n",
+  // AFTER: "test.after.apply(test, ${args});\n" -- never more than 4 allowed
+  AFTER: "test.after(steps.shift(), '${meth}', '${one}', '${two}', '${three}', '${four}');\n",
 
   CAPTURE: "pg.render('${name}.${ext}', {format: '${ext}', quality: '100'});\n",
 

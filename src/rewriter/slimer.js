@@ -13,7 +13,8 @@ class Rewriter {
     this.stepWrapper = 'openWrapper';
     // visits after the first are just steps...
     this.visits = 0;
-    //
+    // some single ref observations have their ref last (3rd vs 2nd)
+    this.refLast = ['URL'];
   }
 
   startCodeBlock() {
@@ -83,8 +84,7 @@ class Rewriter {
         break;
 
       case 'AFTER':
-        let isUrl = item.tokens[1][0] === 'URL';
-        this.handleAfter(item, isUrl);
+        this.handleAfter(item);
         break;
 
       case 'CAPTURE':
@@ -96,13 +96,12 @@ class Rewriter {
         break;
 
       case 'FILL':
-        this.handleCommand(item, true);
+        this.handleCommand(item, {isFill: true});
         break;
 
       // observations are the default
       default:
-        let isUrl = item.tokens[0][0] === 'URL';
-        this.handleObservation(item, isUrl);
+        this.handleObservation(item);
         break;
     }
   }
@@ -118,14 +117,19 @@ class Rewriter {
     }
   }
 
-  // test.after(steps.shift(), method, one, two)
-  // one: selector or ref
-  // two: ref
-  handleAfter(item, isUrl) {
+  // test.after(steps.shift(), method, one, two, three, four)
+  // we will cap the allowed number of args to all methods at 4
+  // we, obviously, cannot pass a complex structure...
+  handleAfter(item) {
     // shift off the after token, leaving a triplet
     item.tokens.shift();
     let str = grammar.AFTER;
     let data = {};
+    // top-level of the grammar objects we are dealing with
+    let subject = item.tokens[0][0];
+    // special grammar cases
+    let isUrl = subject === 'URL';
+    let isNum = subject === 'NUMBER';
     // an after call can only happen on observations, of which URL varies
     if (isUrl) {
       data.meth = grammar[item.tokens[0][0]][item.tokens[1][1]].after;
@@ -133,11 +137,18 @@ class Rewriter {
       data.one = item.tokens[2][1];
       data.two = undefined;
     }
-    // or, a base observation
+    // or, a base observation (number case applies here)
     else {
       data.meth = grammar[item.tokens[0][0]][item.tokens[2][1]].after;
+      // typical selector, ref argument pair
       data.one = item.selector;
       data.two = item.tokens[1][1];
+      // number case has 2 more args
+      if (isNum) {
+        // here the value of the inital refinement (subject)
+        data.three = item.tokens[0][1];
+        data.four = item.quantifier;
+      }
     }
     this.step.push(expand(str, data));
     // the current step is done
@@ -158,12 +169,12 @@ class Rewriter {
     this.step.push(expand(str, data));
   }
 
-  handleCommand(item, isFill) {
+  handleCommand(item, opts) {
     // commands have no after case
     let str = grammar[item.tokens[0][0]];
     let data = { selector: item.selector };
     // fill commands are FILL/ref/ref with the 1th ref being a sel, the last a val
-    if (isFill) {
+    if (opts && opts.isFill) {
       data.ref = item.tokens[1][1];
       data.val = item.tokens[2][1];
       // non-fill command has no val
@@ -172,17 +183,25 @@ class Rewriter {
     this.step.push(expand(str, data));
   }
 
-  handleObservation(item, isUrl) {
-    let data = { selector: item.selector };
-    let str;
+  handleObservation(item) {
+    // selector -> queryStack (managed by the iterator)
+    let data = { selector: item.selector};
+    // top-level of the grammar objects we are dealing with
+    let subject = item.tokens[0][0];
+    // ref-at-the-end case?
+    let isLast = ~this.refLast.indexOf(subject);
+    // where is my ref then?
+    let refIndex = isLast ? 2 : 1;
+    // so then my grammar method is at...
+    let methIndex = (3 - refIndex);
     // all observations have immediate + after use-case
-    if (isUrl) {
-      str = grammar[item.tokens[0][0]][item.tokens[1][1]].now;
-      data.ref = item.tokens[2][1];
-    } else {
-      str = grammar[item.tokens[0][0]][item.tokens[2][1]].now;
-      data.ref = item.tokens[1][1];
-    }
+    let str = grammar[subject][item.tokens[methIndex][1]].now;
+    data.ref = item.tokens[refIndex][1];
+    // some methods will use the subject token value (number for ex...)
+    data.subject = item.tokens[0][1];
+    // NUMBER cases may have a quantifer attr (>, <). The NUMBER token is 0th
+    data.q = item.tokens[0].quantifier;
+
     this.step.push(expand(str, data));
   }
 

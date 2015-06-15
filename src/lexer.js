@@ -11,9 +11,8 @@ class Lexer {
       identifier: /^([$A-Za-z_]\w*)/,
       // anything wrapped in single quotes
       reference: /^'([^"].*?)'/,
-      number: /^([0-9]+)/,
-      // == is truthy != is falsy etc
-      assert: /^(exists|doesNotExist|equals|doesNotEqual|isVisible|isNotVisible)/,
+      number: /^([><0-9]+)/,
+      assert: /^(exists?|(?:do|does)NotExist)/,
       vistBlock: /^visit\s+(.*):/,
       queryBlock: /^query\s+(.*):/
     };
@@ -86,11 +85,25 @@ class Lexer {
   }
 
   number(slice) {
-    let match, num;
+    let match, num, q, t;
     if ((match = this.regexes.number.exec(slice))) {
       num = match[1];
-      this.pushToken('NUMBER', parseInt(num, 10));
+      // still match the original length
       this.taken = num.length;
+      // is it an expression?
+      q = num.charAt(0);
+      // if so, break it apart here
+      if (q === '<' || q === '>' ) {
+        // take off the quantifier
+        num = num.slice(1);
+      // if its not an actual quantifier, clear it
+      } else q = '';
+      // it will be a string throughout...
+      this.pushToken('NUMBER', num);
+      // append the attr the same way that whitespace is, this means that a
+      // number token can be expected to have a quantifier
+      t = this.tokens[this.tokens.length - 1];
+      t.quantifier = q;
     }
     return this.taken;
   }
