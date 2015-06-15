@@ -23,7 +23,7 @@ module.exports = {
 
   NUMBER: {
     exist: {
-      now: "test.countExists('${selector}', '${ref}', ${subject}, '${q}')",
+      now: "test.countExists('${selector}', '${ref}', ${subject}, '${q}');\n",
       after: "test.countExists"
     }
   },

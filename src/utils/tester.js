@@ -1,3 +1,10 @@
+/*
+  TODO introduce a build step into the gulp compilation that allows
+  undefined to remain, vs 'undefined'. This will allow the use of def args.
+  Also, numbers (2 vs '2') so we can remove the check.
+  dequotifier has a nice ring...
+*/
+
 var expand = require('./util').expand;
 
 var Reporter = require('./reporter');
@@ -19,7 +26,7 @@ var Tester = function(dom) {
   this.hasSelector = '"${selector}" contains selector "${ref}"';
   this.urlDoesntContain = 'URL does not contain "${ref}"';
   this.urlDoesntMatch = 'URL does not match "${ref}"';
-  this.countIsNot = 'Count of ${selector} ${ref} is not ${q} ${subject}';
+  this.countIsNot = 'Count of ${selector} ${ref} is not ${q} ${num}';
 };
 
 Tester.prototype.total = function() {
@@ -98,6 +105,7 @@ Tester.prototype.failed = function(data) {
 };
 
 Tester.prototype.textExists = function(selector, ref) {
+  selector || (selector = 'body');
   let text = this.dom.getTextBySelector(selector);
   let data = {
     bool: text.match(ref),
@@ -110,6 +118,7 @@ Tester.prototype.textExists = function(selector, ref) {
 };
 
 Tester.prototype.selectorExists = function(selector, ref) {
+  selector || (selector = 'body');
   let el = this.dom.getSelectorBySelector(selector, ref);
   let data = {
     bool: !!el,
@@ -122,6 +131,7 @@ Tester.prototype.selectorExists = function(selector, ref) {
 
 
 Tester.prototype.textDoesNotExist = function(selector, ref) {
+  selector || (selector = 'body');
   let text = this.dom.getTextBySelector(selector);
   let data = {
     bool: !text.match(ref),
@@ -134,6 +144,7 @@ Tester.prototype.textDoesNotExist = function(selector, ref) {
 };
 
 Tester.prototype.selectorDoesNotExist = function(selector, ref) {
+  selector || (selector = 'body');
   let el = this.dom.getSelectorBySelector(selector, ref);
   let data = {
     bool: !el,
@@ -167,9 +178,12 @@ Tester.prototype.urlMatches = function(ref) {
 };
 
 Tester.prototype.countExists = function (selector, ref, num, q) {
+  selector || (selector = 'body');
   // getSelectors... returns NodeList via querySelectorAll
   let list = this.dom.getSelectorsBySelector(selector, ref);
   let len = list.length;
+  // assure that num is an int
+  if (typeof num === 'string') num = parseInt(num, 10);
   // normalize the bool, q may be present (or not)
   let bool = q ? ( q === '>' ? len > num : len < num ) : len === num;
 
@@ -182,6 +196,7 @@ Tester.prototype.countExists = function (selector, ref, num, q) {
     onFail: 'countIsNot',
     actual: len
   };
+  return this.result(data);
 };
 
 module.exports = Tester;

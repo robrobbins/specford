@@ -185,8 +185,7 @@ class Rewriter {
 
   handleObservation(item) {
     // selector -> queryStack (managed by the iterator)
-    // quantifier -> [> | < | falsy] from NUMBER observations
-    let data = { selector: item.selector, q: item.quantifier };
+    let data = { selector: item.selector};
     // top-level of the grammar objects we are dealing with
     let subject = item.tokens[0][0];
     // ref-at-the-end case?
@@ -200,6 +199,8 @@ class Rewriter {
     data.ref = item.tokens[refIndex][1];
     // some methods will use the subject token value (number for ex...)
     data.subject = item.tokens[0][1];
+    // NUMBER cases may have a quantifer attr (>, <). The NUMBER token is 0th
+    data.q = item.tokens[0].quantifier;
 
     this.step.push(expand(str, data));
   }

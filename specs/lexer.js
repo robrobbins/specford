@@ -106,7 +106,6 @@ describe('The Lexer', function() {
     var nexists = this.l.tokenize("5 '.foo' doNotExist");
     var inner = ['NUMBER', '5'];
     inner.quantifier = '';
-
     expect(nexists).toEqual([inner, ['REFERENCE', '.foo'], ['ASSERT', 'doNotExist']]);
   });
 
