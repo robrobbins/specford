@@ -114,15 +114,46 @@ Tests that Specford performs, scoped to the _current context_.
 ####exists, doesNotExist
 Is a given _Reference_ on (or not on) the page? This "existential" Observation can be made on:
 
-    // Text:
+#####Text:
+Take the **textContent** of the _current context_ and see if it contains the stated _Reference_.
 
     text 'foo bar' exists
 
-    // Element(s) via a CSS selector:
+Keep in mind that this is just a [match operation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/match) with the given the paramaters (non-global). How exact the search is will be
+dependant on how much you reference. 
+
+#####Element via a CSS selector:
+Does a _querySelector_ operation on the _current context_ with the given _Reference_ return a truthy result?
 
     selector '.popup-foo' doesNotExist
 
-Remember that these observations apply to only the _context_ you have set via Query.
+#####Counting and exist
+Execute a _querySelectorAll_ operation on the _current context_. Is the resulting NodeList:
+
+    // equal to the reference?
+    3 '.foo' exist
+    
+    // less-than the reference?
+    <4 '.bar' exist
+    
+    // greater-than the ref?
+    >5 '.baz' exist
+    
+Notice that the cases with quantifier (gt, lt) use a combined **operand+number**. Don't separate those
+with any space. **Rule of three** remember? There is also a slight tweak to the language in that
+the word `exist` is used here as `exists` would just be bad grammar. Syntax breakdown:
+
+    <number> <reference> <exist keyword>
+
+######doesNotExist does not exist
+In _counting_ use cases there is no `doesNotExist`. You do have the option of either
+
+    // explicitly state 0
+    0 '.foo' exist
+    
+    // or...
+    selector '.foo' doesNotExist
+
 
 ####Url Observation
 There are two observations specific to the page URL, `contains` and `matches`:
@@ -134,3 +165,40 @@ There are two observations specific to the page URL, `contains` and `matches`:
     // does the entire URL match the Reference exactly
 
     url matches 'https://www.my-site.com/foo'
+    
+#### After
+Things on a page don't happen instantly. Sometimes Specford should wait. You can tell Specford to
+wait until some _Observation_ is true before proceeding. You do this by simply adding the _after_
+keyword to any _Observation_.
+
+    after selector '.foo' exists
+    
+    after >2 '.bar' exist
+    
+    after text 'Delete Me!' doesNotExist
+    
+Stating the obvious, that syntax is:
+
+    <after keyword> <Observation>
+    
+#####That's not 3!
+Correct, _after_ is viewed as a modifier, if you will, to an _Observation_. The _Observation_ still 
+observes the rule, _after_ is just a stipulation.
+
+The mechanics of the process are such that, when encountering the _after_ keyword, Specford knows to
+keep executing the _Observation_ until either one of two conditions are met:
+
+* the _Observation_ returns a truthy result (pass)
+* three seconds pass and the result of the _Observation_ is still falsy (fail)
+
+Notice the **three seconds** part. Specford executes the observation once every **250ms** for those 3s, doing
+nothing else until, well, after. Remember that regardless of the outcome your _.spec_ will then continue.
+
+    5 '.foo' exist
+    
+    click selector '.delete-a-foo'
+    
+    after 4 '.foo' exist
+    
+    fill 'input.finished' 'YAY!'
+    
