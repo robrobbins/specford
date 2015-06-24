@@ -27,6 +27,7 @@ var Tester = function(dom) {
   this.urlDoesntContain = 'URL does not contain "${ref}"';
   this.urlDoesntMatch = 'URL does not match "${ref}"';
   this.countIsNot = 'Count of ${selector} ${ref} is not ${q} ${num}';
+  this.isNotDisplayed = '${selector} {ref} is display:none';
 };
 
 Tester.prototype.total = function() {
@@ -129,7 +130,6 @@ Tester.prototype.selectorExists = function(selector, ref) {
   return this.result(data);
 };
 
-
 Tester.prototype.textDoesNotExist = function(selector, ref) {
   selector || (selector = 'body');
   let text = this.dom.getTextBySelector(selector);
@@ -153,6 +153,17 @@ Tester.prototype.selectorDoesNotExist = function(selector, ref) {
     onFail: 'hasSelector'
   };
   return this.result(data);
+};
+
+Tester.prototype.selectorIsDisplayed = function (selector, ref) {
+  selector || (selector = 'body');
+  let none = this.dom.selectorIsDisplayNone(selector, ref);
+  let data = {
+    bool: !none,
+    selector: selector,
+    ref: ref,
+    onFail: 'isNotDisplayed'
+  };
 };
 
 Tester.prototype.urlContains = function(ref) {

@@ -18,6 +18,10 @@ module.exports = {
     doesNotExist: {
       after: "selectorDoesNotExist",
       now: "test.selectorDoesNotExist('${selector}', '${ref}');\n"
+    },
+    isDisplayed: {
+      after: "selectorIsDisplayed",
+      now: "test.selectorIsDisplayed('${selector}', '${ref}');\n"
     }
   },
 

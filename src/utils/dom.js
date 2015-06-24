@@ -32,6 +32,17 @@ Dom.prototype.getSelectorsBySelector = function (selector, ref) {
   return this.getSelectorBySelector(selector, ref, true);
 };
 
+Dom.prototype.selectorIsDisplayNone = function (selector, ref) {
+  let el = this.getSelectorBySelector(selector, ref);
+  // there can multiple cases that indicate 'none'
+  let display = el.style && el.style.display;
+  if (display === 'none') return true;
+  // double check with the computed...
+  display = getComputedStyle(el).display;
+  if (display === 'none') return true;
+  else return false;
+};
+
 Dom.prototype.getUrl = function() {
   return this.pg.evaluate(() => {
     return window.location.href;
