@@ -1,14 +1,14 @@
 class Lexer {
   constructor() {
     this.keywords = ['text', 'click', 'fill', 'after', 'url', 'selector',
-      'capture'];
+      'capture', 'require'];
 
     this.regexes = {
       comment: /^--\s*.*/,
       whitespace: /^[^\n\S]+/,
       trailingSpaces: /\s+$/,
       // a catch all generic thing
-      identifier: /^([$A-Za-z_]\w*)/,
+      identifier: /^([$A-Za-z_\/]\w*)/,
       // anything wrapped in single quotes
       reference: /^'([^"].*?)'/,
       number: /^([><0-9]+)/,

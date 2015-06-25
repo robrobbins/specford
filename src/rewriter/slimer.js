@@ -24,7 +24,8 @@ class Rewriter {
       grammar.dom,
       grammar.tester,
       grammar.colorizer,
-      grammar.logger
+      grammar.logger,
+      grammar.fixtures
     );
   }
 

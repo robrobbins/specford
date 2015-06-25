@@ -86,8 +86,11 @@ module.exports = {
   pgOpen: "pg.open(url, steps.shift());\n",
   logOpening: "log.pgOpening();\n",
   logOpened: "log.pgOpened();\n",
+
   steps: "var steps = [\n${steps}\n];\n",
   visitFn: "var visit = function(url) {\n${body}};\n",
+  fixtures: "var fixtures = {};\n",
+  fixture: "fixtures['${fixture}'] = require(../fixtures/${dir}/${file});\n",
   visitCall: "visit('${url}');\n"
 
 };
