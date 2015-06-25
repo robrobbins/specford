@@ -19,14 +19,22 @@ module.exports = {
       after: "selectorDoesNotExist",
       now: "test.selectorDoesNotExist('${selector}', '${ref}');\n"
     },
-    isDisplayed: {
-      after: "selectorIsDisplayed",
-      now: "test.selectorIsDisplayed('${selector}', '${ref}');\n"
+    isVisible: {
+      after: "selectorIsVisible",
+      now: "test.selectorIsVisible('${selector}', '${ref}');\n"
+    },
+    isNotVisible: {
+      after: "selectorIsNotVisible",
+      now: "test.selectorIsNotVisible('${selector}', '${ref}');\n"
     }
   },
 
   NUMBER: {
     exist: {
+      now: "test.countExists('${selector}', '${ref}', ${subject}, '${q}');\n",
+      after: "test.countExists"
+    },
+    exists: {
       now: "test.countExists('${selector}', '${ref}', ${subject}, '${q}');\n",
       after: "test.countExists"
     }
@@ -78,7 +86,6 @@ module.exports = {
   pgOpen: "pg.open(url, steps.shift());\n",
   logOpening: "log.pgOpening();\n",
   logOpened: "log.pgOpened();\n",
-
   steps: "var steps = [\n${steps}\n];\n",
   visitFn: "var visit = function(url) {\n${body}};\n",
   visitCall: "visit('${url}');\n"

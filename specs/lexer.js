@@ -141,14 +141,14 @@ describe('The Lexer', function() {
   });
 
   it('tokenizes display', function() {
-    var disp = this.l.tokenize("'.foo' isDisplayed");
+    var disp = this.l.tokenize("'.foo' isVisible");
 
-    expect(disp).toEqual([['REFERENCE', '.foo'], ['ASSERT', 'isDisplayed']]);
+    expect(disp).toEqual([['REFERENCE', '.foo'], ['ASSERT', 'isVisible']]);
   });
 
   it('tokenizes !display', function() {
-    var ndisp = this.l.tokenize("'.bar' isNotDisplayed");
+    var ndisp = this.l.tokenize("'.bar' isNotVisible");
 
-    expect(ndisp).toEqual([['REFERENCE', '.bar'], ['ASSERT', 'isNotDisplayed']]);
+    expect(ndisp).toEqual([['REFERENCE', '.bar'], ['ASSERT', 'isNotVisible']]);
   });
 });

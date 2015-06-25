@@ -12,7 +12,7 @@ class Lexer {
       // anything wrapped in single quotes
       reference: /^'([^"].*?)'/,
       number: /^([><0-9]+)/,
-      assert: /^(exists?|(?:do|does)NotExist|(?:is|isNot)Displayed)/,
+      assert: /^(exists?|(?:do|does)NotExist|(?:is|isNot)Visible)/,
       vistBlock: /^visit\s+(.*):/,
       queryBlock: /^query\s+(.*):/
     };
