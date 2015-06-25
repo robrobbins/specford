@@ -139,4 +139,16 @@ describe('The Lexer', function() {
     expect(i[0].indented).toBe(2);
 
   });
+
+  it('tokenizes display', function() {
+    var disp = this.l.tokenize("'.foo' isVisible");
+
+    expect(disp).toEqual([['REFERENCE', '.foo'], ['ASSERT', 'isVisible']]);
+  });
+
+  it('tokenizes !display', function() {
+    var ndisp = this.l.tokenize("'.bar' isNotVisible");
+
+    expect(ndisp).toEqual([['REFERENCE', '.bar'], ['ASSERT', 'isNotVisible']]);
+  });
 });

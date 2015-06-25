@@ -27,6 +27,8 @@ var Tester = function(dom) {
   this.urlDoesntContain = 'URL does not contain "${ref}"';
   this.urlDoesntMatch = 'URL does not match "${ref}"';
   this.countIsNot = 'Count of ${selector} ${ref} is not ${q} ${num}';
+  this.isNotVisible = '${selector} ${ref} is not visible';
+  this.isVisible = '${selector} ${ref} is visible';
 };
 
 Tester.prototype.total = function() {
@@ -63,8 +65,8 @@ Tester.prototype.result = function(data) {
 };
 
 Tester.prototype.after = function (next, test, ...testArgs) {
-  // default timeout is 3s
-  var tOut = 3000;
+  // default timeout is 10s
+  var tOut = 10000;
   var start = new Date().getTime();
   // condition to be met before proceeding
   var bool = false;
@@ -90,7 +92,7 @@ Tester.prototype.after = function (next, test, ...testArgs) {
       clearInterval(interval);
       next();
     }
-  }.bind(this), 250);
+  }.bind(this), 500);
 };
 
 // We need to see what was actually returned from the page thread in a fail
@@ -117,19 +119,6 @@ Tester.prototype.textExists = function(selector, ref) {
   return this.result(data);
 };
 
-Tester.prototype.selectorExists = function(selector, ref) {
-  selector || (selector = 'body');
-  let el = this.dom.getSelectorBySelector(selector, ref);
-  let data = {
-    bool: !!el,
-    selector: selector,
-    ref: ref,
-    onFail: 'doesntHaveSelector'
-  };
-  return this.result(data);
-};
-
-
 Tester.prototype.textDoesNotExist = function(selector, ref) {
   selector || (selector = 'body');
   let text = this.dom.getTextBySelector(selector);
@@ -143,6 +132,18 @@ Tester.prototype.textDoesNotExist = function(selector, ref) {
   return this.result(data);
 };
 
+Tester.prototype.selectorExists = function(selector, ref) {
+  selector || (selector = 'body');
+  let el = this.dom.getSelectorBySelector(selector, ref);
+  let data = {
+    bool: !!el,
+    selector: selector,
+    ref: ref,
+    onFail: 'doesntHaveSelector'
+  };
+  return this.result(data);
+};
+
 Tester.prototype.selectorDoesNotExist = function(selector, ref) {
   selector || (selector = 'body');
   let el = this.dom.getSelectorBySelector(selector, ref);
@@ -151,6 +152,31 @@ Tester.prototype.selectorDoesNotExist = function(selector, ref) {
     selector: selector,
     ref: ref,
     onFail: 'hasSelector'
+  };
+  return this.result(data);
+};
+
+Tester.prototype.selectorIsVisible = function (selector, ref) {
+  selector || (selector = 'body');
+  let not = this.dom.selectorIsNotVisible(selector, ref);
+  let data = {
+    bool: !not,
+    selector: selector,
+    ref: ref,
+    onFail: 'isNotVisible'
+  };
+  return this.result(data);
+};
+
+Tester.prototype.selectorIsNotVisible = function (selector, ref) {
+  selector || (selector = 'body');
+  let not = this.dom.selectorIsNotVisible(selector, ref);
+  let data = {
+    // the isDisayNone returns a bool...
+    bool: not,
+    selector: selector,
+    ref: ref,
+    onFail: 'isVisible'
   };
   return this.result(data);
 };
