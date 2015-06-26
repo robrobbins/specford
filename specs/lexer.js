@@ -42,7 +42,6 @@ describe('The Lexer', function() {
 
   it("tokenizes after", function() {
     var tokens = this.l.tokenize("after url contains '#foo'");
-
     expect(tokens).toEqual([['AFTER', 'after'], ['URL', 'url'], ['IDENTIFIER', 'contains'], ['REFERENCE', '#foo']]);
   });
 
@@ -77,7 +76,6 @@ describe('The Lexer', function() {
 
   it('tokenizes exists', function() {
     var exists = this.l.tokenize("'foo' exists");
-
     expect(exists).toEqual([['REFERENCE', 'foo'], ['ASSERT', 'exists']]);
   });
 
@@ -92,13 +90,11 @@ describe('The Lexer', function() {
 
   it('tokenizes selector', function() {
     var exists = this.l.tokenize("selector '.foo' exists");
-
     expect(exists).toEqual([['SELECTOR', 'selector'], ['REFERENCE', '.foo'], ['ASSERT', 'exists']]);
   });
 
   it('tokenizes !exists', function() {
     var nexists = this.l.tokenize("'foo' doesNotExist");
-
     expect(nexists).toEqual([['REFERENCE', 'foo'], ['ASSERT', 'doesNotExist']]);
   });
 
@@ -109,10 +105,14 @@ describe('The Lexer', function() {
     expect(nexists).toEqual([inner, ['REFERENCE', '.foo'], ['ASSERT', 'doNotExist']]);
   });
 
-  it("tokenizes fill cadence", function() {
+  it("tokenizes fill cadence (reference)", function() {
     var fill = this.l.tokenize("fill '.foo' 'bar'");
-
     expect(fill).toEqual([['FILL', 'fill'], ['REFERENCE', '.foo'], ['REFERENCE', 'bar']]);
+  });
+
+  it("tokenizes fill cadence (fixture)", function() {
+    var fill = this.l.tokenize("fill '.foo' Bar.baz");
+    expect(fill).toEqual([['FILL', 'fill'], ['REFERENCE', '.foo'], ['IDENTIFIER', 'Bar.baz']]);
   });
 
   it('recognizes text', function() {
@@ -124,13 +124,11 @@ describe('The Lexer', function() {
 
   it('recognizes click', function() {
     var clik = this.l.tokenize("click selector '.foo'");
-
     expect(clik).toEqual([['CLICK', 'click'], ['SELECTOR', 'selector'], ['REFERENCE', '.foo']]);
   });
 
   it('tokenizes capture', function() {
     var cap = this.l.tokenize("capture jpeg 'foo'");
-
     expect(cap).toEqual([['CAPTURE', 'capture'], ['IDENTIFIER', 'jpeg'], ['REFERENCE', 'foo']]);
   });
 
@@ -142,13 +140,20 @@ describe('The Lexer', function() {
 
   it('tokenizes display', function() {
     var disp = this.l.tokenize("'.foo' isVisible");
-
     expect(disp).toEqual([['REFERENCE', '.foo'], ['ASSERT', 'isVisible']]);
   });
 
   it('tokenizes !display', function() {
     var ndisp = this.l.tokenize("'.bar' isNotVisible");
-
     expect(ndisp).toEqual([['REFERENCE', '.bar'], ['ASSERT', 'isNotVisible']]);
+  });
+
+  it('tokenizes require', function() {
+    var req = this.l.tokenize("require users Rob");
+    expect(req).toEqual([['REQUIRE', 'require'], ['IDENTIFIER', 'users'], ['IDENTIFIER', 'Rob']]);
+
+    // does not freak out with a nested path for 1th arg if you use a ref
+    req = this.l.tokenize("require projects/foo Bar");
+    expect(req).toEqual([['REQUIRE', 'require'], ['IDENTIFIER', 'projects/foo'], ['IDENTIFIER', 'Bar']]);
   });
 });
