@@ -8,7 +8,7 @@ class Lexer {
       whitespace: /^[^\n\S]+/,
       trailingSpaces: /\s+$/,
       // a catch all generic thing
-      identifier: /^([$A-Za-z_\/]\w*)/,
+      identifier: /^([$A-Za-z_/.]+\w*)/,
       // anything wrapped in single quotes
       reference: /^'([^"].*?)'/,
       number: /^([><0-9]+)/,

@@ -6,6 +6,7 @@ var expand = require('../utils/util').expand;
 */
 class Rewriter {
   constructor() {
+    this.requires = [];
     this.code = [];
     this.steps = [];
     this.step = [];
@@ -24,8 +25,7 @@ class Rewriter {
       grammar.dom,
       grammar.tester,
       grammar.colorizer,
-      grammar.logger,
-      grammar.fixtures
+      grammar.logger
     );
   }
 
@@ -75,6 +75,10 @@ class Rewriter {
   // inspect the token and call the appropriate method(s)
   handleItem(item) {
     switch (item.tokens[0][0]) {
+      case 'REQUIRE':
+        this.handleRequire(item);
+        break;
+
       case 'VISIT':
         this.handleVisit(item.tokens[0][1]);
         break;
@@ -105,6 +109,12 @@ class Rewriter {
         this.handleObservation(item);
         break;
     }
+  }
+
+  handleRequire(item) {
+    let str = grammar.REQUIRE;
+    let data = { fixture: item.tokens[2][1], path: item.tokens[1][1]};
+    this.requires.push(expand(str, data));
   }
 
   handleVisit(url) {
@@ -171,15 +181,20 @@ class Rewriter {
   }
 
   handleCommand(item, opts) {
-    // commands have no after case
-    let str = grammar[item.tokens[0][0]];
+    let isFill = opts && opts.isFill;
     let data = { selector: item.selector };
-    // fill commands are FILL/ref/ref with the 1th ref being a sel, the last a val
-    if (opts && opts.isFill) {
+    let str;
+    // fill commands are FILL/REF/REF  OR FILL/REF/ID with the 1th ref being a sel, the last a val
+    if (isFill) {
+      // can be either from a string or require reference, hence the xtra refinement
+      str = grammar[item.tokens[0][0]][item.tokens[2][0]];
       data.ref = item.tokens[1][1];
       data.val = item.tokens[2][1];
       // non-fill command has no val
-    } else data.ref = item.tokens[2][1];
+    } else {
+      str = grammar[item.tokens[0][0]];
+      data.ref = item.tokens[2][1];
+    }
 
     this.step.push(expand(str, data));
   }
@@ -212,6 +227,9 @@ class Rewriter {
     for (let item of iterator) {
       this.handleItem(item);
     }
+
+    // the requires go in now
+    this.code.push(this.requires.join(''));
 
     // each token set inspected, close the last step
     this.step.push(grammar.stop, grammar.exit);

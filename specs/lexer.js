@@ -105,9 +105,14 @@ describe('The Lexer', function() {
     expect(nexists).toEqual([inner, ['REFERENCE', '.foo'], ['ASSERT', 'doNotExist']]);
   });
 
-  it("tokenizes fill cadence", function() {
+  it("tokenizes fill cadence (reference)", function() {
     var fill = this.l.tokenize("fill '.foo' 'bar'");
     expect(fill).toEqual([['FILL', 'fill'], ['REFERENCE', '.foo'], ['REFERENCE', 'bar']]);
+  });
+
+  it("tokenizes fill cadence (fixture)", function() {
+    var fill = this.l.tokenize("fill '.foo' Bar.baz");
+    expect(fill).toEqual([['FILL', 'fill'], ['REFERENCE', '.foo'], ['IDENTIFIER', 'Bar.baz']]);
   });
 
   it('recognizes text', function() {
@@ -144,11 +149,11 @@ describe('The Lexer', function() {
   });
 
   it('tokenizes require', function() {
-    var req = this.l.tokenize("require users rob");
-    expect(req).toEqual([['REQUIRE', 'require'], ['IDENTIFIER', 'users'], ['IDENTIFIER', 'rob']]);
+    var req = this.l.tokenize("require users Rob");
+    expect(req).toEqual([['REQUIRE', 'require'], ['IDENTIFIER', 'users'], ['IDENTIFIER', 'Rob']]);
 
-    // does not freak out with a nested path for 1th arg
-    req = this.l.tokenize("require projects/foo bar");
-    expect(req).toEqual([['REQUIRE', 'require'], ['IDENTIFIER', 'projects/foo'], ['IDENTIFIER', 'bar']]);
+    // does not freak out with a nested path for 1th arg if you use a ref
+    req = this.l.tokenize("require projects/foo Bar");
+    expect(req).toEqual([['REQUIRE', 'require'], ['IDENTIFIER', 'projects/foo'], ['IDENTIFIER', 'Bar']]);
   });
 });

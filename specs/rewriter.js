@@ -22,7 +22,7 @@ describe('The Rewriter', function() {
     it("starts the code block", function() {
       expect(this.r.code.length).toBeFalsy();
       this.r.startCodeBlock();
-      expect(this.r.code.length).toBe(7);
+      expect(this.r.code.length).toBe(6);
       //console.log(this.r.code);
     });
 
@@ -50,6 +50,17 @@ describe('The Rewriter', function() {
   });
 
   describe("token handling", function() {
+    it("handles requires", function() {
+      expect(this.r.requires.length).toBe(0);
+
+      var item = {
+        tokens: [['REQUIRE', 'require'], ['REFERENCE', 'users/foo'], ['IDENTIFIER', 'mrFoo']],
+        selector: undefined
+      };
+      this.r.handleRequire(item);
+      expect(this.r.requires.length).toBe(1);
+    });
+
     it("handles first visit token", function() {
       this.r.handleVisit('foo.com');
       expect(this.r.initialVisit).toBe('foo.com');
@@ -139,6 +150,30 @@ describe('The Rewriter', function() {
       expect(~this.r.step[0].search(/\>/)).toBeTruthy();
       expect(~this.r.step[0].search(/div.foo-bar/)).toBeTruthy();
       expect(~this.r.step[0].search(/\.baz/)).toBeTruthy();
+    });
+
+    it("handles fill command (reference)", function() {
+      var item = {
+        tokens: [['FILL', 'fill'], ['REFERENCE', 'input.foo'], ['REFERENCE', 'bar baz']],
+        selector: 'div.qux'
+      };
+
+      this.r.handleItem(item);
+
+      expect(this.r.step[0].search(/dom.fillSelector/)).toBe(0);
+      //console.log(require('util').inspect(this.r.step[0], { depth: null }));
+    });
+
+    it("handles fill command (identifier)", function() {
+      var item = {
+        tokens: [['FILL', 'fill'], ['REFERENCE', 'input.foo'], ['IDENTIFIER', 'Bar.baz']],
+        selector: 'div.qux'
+      };
+
+      this.r.handleItem(item);
+
+      expect(this.r.step[0].search(/dom.fillSelector/)).toBe(0);
+      //console.log(require('util').inspect(this.r.step[0], { depth: null }));
     });
   });
 
