@@ -17,11 +17,11 @@ function specford() {
 	if [ $len -gt 0 ]; then
 	  for name in "$@"
 	  do
-	    slimerjs scripts/$name.js --ssl-protocol=any
+	    slimerjs lib/scripts/$name.js --ssl-protocol=any
 	  done
 	else
 	# if there arent any just run averything in the scripts dir
-	  for file in scripts/*.js
+	  for file in lib/scripts/*.js
 	  do
 	    if [ -f "$file" ]; then
 				slimerjs $file --ssl-protocol=any

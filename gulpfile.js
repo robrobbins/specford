@@ -1,19 +1,19 @@
 var gulp = require('gulp');
 var args = require('yargs').argv;
-var expand = require('./src/utils/util').expand;
+var expand = require('./lib/src/utils/util').expand;
 var replace = require('gulp-ext-replace');
-var compile = require('./gulp_plugins/compiler');
+var compile = require('./lib/gulp_plugins/compiler');
 var jasmine = require('gulp-jasmine');
 var exec = require('child_process').exec;
 var glob = require('glob');
 
 gulp.task('compile', function() {
-  var path = expand('spec/${which}.spec', { which: args.spec });
+  var path = expand('specs/${which}.spec', { which: args.spec });
 
   return gulp.src(path)
     .pipe(compile())
     .pipe(replace('.js'))
-    .pipe(gulp.dest('scripts'));
+    .pipe(gulp.dest('lib/scripts'));
 });
 
 gulp.task('run', function() {
@@ -28,11 +28,11 @@ gulp.task('run', function() {
   var path;
 
   if (args.spec) {
-    path = expand('scripts/${which}.js', { which: args.spec });
+    path = expand('lib/scripts/${which}.js', { which: args.spec });
     exec(expand(cmd, { path: path }), cb);
 
   } else {
-    glob('scripts/*.js', function(e, files) {
+    glob('lib/scripts/*.js', function(e, files) {
       if (e) console.log(e);
       else {
         files.forEach(function(file) {
@@ -44,7 +44,7 @@ gulp.task('run', function() {
 });
 
 gulp.task('jasmine', function() {
-  var str = 'specs/${which}.js';
+  var str = 'lib/tests/${which}.js';
   var data = { which: args.spec ? args.spec : '*' };
   var path = expand(str, data);
 
