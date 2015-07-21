@@ -225,3 +225,16 @@ The `name` can then be used in conjunction with the `fill` command
     fill 'input.foo' 'Bob.firstName'
 
 ### Installation
+Obviously you clone this repo. Obviously you `cd` into this repo, then you can
+`npm install`, Next...
+
+Specford's default _runner_ is [slimerjs](https://slimerjs.org/). If you are
+of the Mac persuasion you can use *homebrew*
+
+    brew install slimerjs
+
+Slimer, depending on release, will usually need a version of Firefox that is not
+the latest to run. Our solution is to get an [older Firefox]() and place that the
+`/runners` directory located in the *Specford* root. There is a handy `bash`
+snippet provided in the addons, `whereIsRunners.sh`, copy that into a *dot file* of
+your choice (`~/.bash_profile` for instance).
