@@ -120,7 +120,7 @@ Take the **textContent** of the _current context_ and see if it contains the sta
     text 'foo bar' exists
 
 Keep in mind that this is just a [match operation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/match) with the given the paramaters (non-global). How exact the search is will be
-dependant on how much you reference. 
+dependant on how much you reference.
 
 #####Element via a CSS selector:
 Does a _querySelector_ operation on the _current context_ with the given _Reference_ return a truthy result?
@@ -132,13 +132,13 @@ Execute a _querySelectorAll_ operation on the _current context_. Is the resultin
 
     // equal to the reference?
     3 '.foo' exist
-    
+
     // less-than the reference?
     <4 '.bar' exist
-    
+
     // greater-than the ref?
     >5 '.baz' exist
-    
+
 Notice that the cases with quantifier (gt, lt) use a combined **operand+number**. Don't separate those
 with any space. **Rule of three** remember? There is also a slight tweak to the language in that
 the word `exist` is used here as `exists` would just be bad grammar. Syntax breakdown:
@@ -150,10 +150,17 @@ In _counting_ use cases there is no `doesNotExist`. You do have the option of ei
 
     // explicitly state 0
     0 '.foo' exist
-    
+
     // or...
     selector '.foo' doesNotExist
 
+
+####Display vs Visibility
+Yes, there is a _big-assed_ difference between `display:none` and `visibility:hidden`. Specford, like a user, does not give a damn. It's for this reason that the provided `isVisible` and `isNotVisible` observations bundle the two.
+
+    selector '.foo' isNotVisible
+
+The above *observation* will be truthy if `.foo` is either `dispaly:none` *or* `visibility:hidden`. Why? Because a user wouldn't see it either way.
 
 ####Url Observation
 There are two observations specific to the page URL, `contains` and `matches`:
@@ -165,24 +172,24 @@ There are two observations specific to the page URL, `contains` and `matches`:
     // does the entire URL match the Reference exactly
 
     url matches 'https://www.my-site.com/foo'
-    
+
 #### After
 Things on a page don't happen instantly. Sometimes Specford should wait. You can tell Specford to
 wait until some _Observation_ is true before proceeding. You do this by simply adding the _after_
 keyword to any _Observation_.
 
     after selector '.foo' exists
-    
+
     after >2 '.bar' exist
-    
+
     after text 'Delete Me!' doesNotExist
-    
+
 Stating the obvious, that syntax is:
 
     <after keyword> <Observation>
-    
+
 #####That's not 3!
-Correct, _after_ is viewed as a modifier, if you will, to an _Observation_. The _Observation_ still 
+Correct, _after_ is viewed as a modifier, if you will, to an _Observation_. The _Observation_ still
 observes the rule, _after_ is just a stipulation.
 
 The mechanics of the process are such that, when encountering the _after_ keyword, Specford knows to
@@ -195,10 +202,26 @@ Notice the **three seconds** part. Specford executes the observation once every 
 nothing else until, well, after. Remember that regardless of the outcome your _.spec_ will then continue.
 
     5 '.foo' exist
-    
+
     click selector '.delete-a-foo'
-    
+
     after 4 '.foo' exist
-    
+
     fill 'input.finished' 'YAY!'
-    
+
+#### Require
+Use this command to set a variable that the `fill` command can use as a "fixture".
+
+    require users/bob Bob
+
+This command will look for a 'bob.json' (or 'bob.js') in a `/users` directory in
+the provided '/fixtures' directory. It will set what that file exports as "Bob".
+The synax essentially then is:
+
+    <require keyword> <path/to/file/in/fixtures> <name>
+
+The `name` can then be used in conjunction with the `fill` command
+
+    fill 'input.foo' 'Bob.firstName'
+
+### Installation

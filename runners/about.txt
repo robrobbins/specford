@@ -1,0 +1,2 @@
+Drop a Firefox version compatible with the Slimerjs provided by Homebrew in here.
+For example, Slimerjs verz 0.9.5 requires Firefox ~36.x.x
