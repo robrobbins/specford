@@ -234,7 +234,28 @@ of the Mac persuasion you can use *homebrew*
     brew install slimerjs
 
 Slimer, depending on release, will usually need a version of Firefox that is not
-the latest to run. Our solution is to get an [older Firefox]() and place that the
-`/runners` directory located in the *Specford* root. There is a handy `bash`
-snippet provided in the addons, `whereIsRunners.sh`, copy that into a *dot file* of
-your choice (`~/.bash_profile` for instance).
+the latest to run. Our solution is to get an [older Firefox](http://ftp.mozilla.org/pub/mozilla.org/firefox/releases/) and place that the
+`/runners` directory located in the *Specford* root. Current Slimerjs on Homebrew seems to like `36.0.4`.
+There is a handy `bash` snippet provided in the addons, `whereIsRunners.sh`, copy that into a *dot file* of
+your choice (`~/.bash_profile` for instance), and adjust the path for where you cloned the *Specford* project.
+
+    export SLIMERJSLAUNCHER=~/github/specford/lib/runners/Firefox.app/Contents/MacOS/firefox
+
+Is the authors entry.
+
+### Compiling and Running
+
+Write your `spec` files and place them in the `specs` directory in the *Specford* root.
+
+    gulp compile foo
+
+Will look for a `foo.spec` in your `specs` directory and compile that into a
+runnable script that Slimerjs (or other runner) can use.
+
+You can then run your `spec`
+
+    specford foo
+
+If you are using the provided bash add-on, if not there is a gulp task
+
+    gulp run --spec foo
