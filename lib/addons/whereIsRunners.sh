@@ -2,4 +2,4 @@
 # put Firefox <= 36.x.x
 # If you dont mind having an older Firefox as the only one on your system,
 # you can install it an make this path /Applications/...
-export SLIMERJSLAUNCHER=~path/to/specford/runners/Firefox.app/Contents/MacOS/firefox
+export SLIMERJSLAUNCHER=~path-to-specford/lib/runners/Firefox.app/Contents/MacOS/firefox
