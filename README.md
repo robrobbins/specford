@@ -68,6 +68,16 @@ The three parts here can be defined as:
 
     <click keyword> <selector keyword> <css-selector reference>
 
+####Select
+Instruct Specford to select an `option`, `checkbox`, or `radio` via CSS selector:
+
+    select selector 'value[foo="bar"]'
+
+The three parts here can be defined as:
+
+    <select keyword> <selector keyword> <css-selector reference>
+
+
 #####References
 Notice the CSS selector in the above _click command_ is in **single quotes**. This is what we call a **Reference**.
 A **Reference** is any series of characters that may, or may not, at some point, contain whitespace.
@@ -161,6 +171,13 @@ Yes, there is a _big-assed_ difference between `display:none` and `visibility:hi
     selector '.foo' isNotVisible
 
 The above *observation* will be truthy if `.foo` is either `dispaly:none` *or* `visibility:hidden`. Why? Because a user wouldn't see it either way.
+
+####isSelected, isNotSelected
+Does a given _Reference_ on the page have the `selected` or `checked` attribute?
+This Observation can be made on `option`, `checkbox`, or `radio` elements:
+
+    selector '[value="foo"]' isSelected'
+    selector '[value="bar"]' isNotSelected
 
 ####Url Observation
 There are two observations specific to the page URL, `contains` and `matches`:
