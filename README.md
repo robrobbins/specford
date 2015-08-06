@@ -264,7 +264,7 @@ Is the authors entry.
 
 Write your `spec` files and place them in the `specs` directory in the *Specford* root.
 
-    gulp compile foo
+    gulp compile --spec foo
 
 Will look for a `foo.spec` in your `specs` directory and compile that into a
 runnable script that Slimerjs (or other runner) can use.
