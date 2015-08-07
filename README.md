@@ -276,3 +276,14 @@ You can then run your `spec`
 If you are using the provided bash add-on, if not there is a gulp task
 
     gulp run --spec foo
+    
+#### Specford Now!
+There is a provided example `spec` file, `goog.spec`, you can compile and run 
+just to see the awesomeness. 
+
+    gulp compile --spec goog
+    specford goog
+    
+The above assumes you are using the _bash_ snippet for running the specs if not
+you can use the gulp task `gulp run --spec goog`
+
